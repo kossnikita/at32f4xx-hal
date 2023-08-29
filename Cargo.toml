@@ -1,0 +1,45 @@
+[package]
+name = "at32f4xx-hal"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+at32f4xx-pac = "0.1"
+defmt = { version = "0.3", optional = true}
+cortex-m = { version = "0.7", features = ["critical-section-single-core"]}
+cortex-m-rt = "0.7"
+nb = "1.1"
+embedded-hal = { features = ["unproven"], version = "0.2.7" }
+embedded-hal-nb = "1.0.0-rc.1"
+fugit = "0.3.7"
+
+[features]
+at32a403a = ["at32f4xx-pac/at32a403a", "at32a403a-peripheral"]
+at32f402 = ["at32f4xx-pac/at32f402", "at32f402-peripheral"]
+at32f403 = ["at32f4xx-pac/at32f403", "at32f403-peripheral"]
+at32f403a = ["at32f4xx-pac/at32f403a", "at32f403a-peripheral"]
+at32f405 = ["at32f4xx-pac/at32f405", "at32f405-peripheral"]
+at32f407 = ["at32f4xx-pac/at32f407", "at32f407-peripheral"]
+at32f413 = ["at32f4xx-pac/at32f413", "at32f413-peripheral"]
+at32f415 = ["at32f4xx-pac/at32f415", "at32f415-peripheral"]
+at32f421 = ["at32f4xx-pac/at32f421", "at32f421-peripheral"]
+at32f423 = ["at32f4xx-pac/at32f423", "at32f423-peripheral"]
+at32f425 = ["at32f4xx-pac/at32f425", "at32f425-peripheral"]
+at32f435 = ["at32f4xx-pac/at32f435", "at32f435-peripheral"]
+at32f437 = ["at32f4xx-pac/at32f437", "at32f437-peripheral"]
+at32wb415 = ["at32f4xx-pac/at32wb415", "at32wb415-peripheral"]
+
+at32a403a-peripheral = []
+at32f402-peripheral = []
+at32f403-peripheral = []
+at32f403a-peripheral = []
+at32f405-peripheral = []
+at32f407-peripheral = []
+at32f413-peripheral = []
+at32f415-peripheral = []
+at32f421-peripheral = []
+at32f423-peripheral = []
+at32f425-peripheral = []
+at32f435-peripheral = []
+at32f437-peripheral = []
+at32wb415-peripheral = []
