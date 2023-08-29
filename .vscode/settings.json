@@ -1,0 +1,6 @@
+{
+    "rust-analyzer.cargo.features": [
+        "defmt",
+        "at32f415"
+    ]
+}

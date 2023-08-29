@@ -2,6 +2,7 @@ use super::*;
 
 pub use super::Input as DefaultMode;
 
+#[cfg(feature = "at32f415")]
 gpio!(GPIOA, gpioa, PA, 'A', PAn, [
     PA0: (pa0, 0, []),
     PA1: (pa1, 1, []),
@@ -21,6 +22,7 @@ gpio!(GPIOA, gpioa, PA, 'A', PAn, [
     PA15: (pa15, 15, [], super::Debugger), // JTDI, PullUp
 ]);
 
+#[cfg(feature = "at32f415")]
 gpio!(GPIOB, gpiob, PB, 'B', PBn, [
     PB0: (pb0, 0, []),
     PB1: (pb1, 1, []),
@@ -40,6 +42,7 @@ gpio!(GPIOB, gpiob, PB, 'B', PBn, [
     PB15: (pb15, 15, []),
 ]);
 
+#[cfg(feature = "at32f415")]
 gpio!(GPIOC, gpioc, PC, 'C', PCn, [
     PC0: (pc0, 0, []),
     PC1: (pc1, 1, []),
@@ -59,6 +62,7 @@ gpio!(GPIOC, gpioc, PC, 'C', PCn, [
     PC15: (pc15, 15, []),
 ]);
 
+#[cfg(feature = "at32f415")]
 gpio!(GPIOD, gpiod, PD, 'D', PDn, [
     PD0: (pd0, 0, []),
     PD1: (pd1, 1, []),
@@ -78,6 +82,7 @@ gpio!(GPIOD, gpiod, PD, 'D', PDn, [
     PD15: (pd15, 15, []),
 ]);
 
+#[cfg(feature = "at32f415")]
 gpio!(GPIOF, gpiof, PF, 'F', PFn, [
     PF0: (pf0, 0, []),
     PF1: (pf1, 1, []),
