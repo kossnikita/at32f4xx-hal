@@ -47,22 +47,22 @@ use fugit::HertzU32 as Hertz;
 mod pll;
 
 mod enable;
-use crate::pac::crm::RegisterBlock as RccRB;
+use crate::pac::crm::RegisterBlock as CrmRB;
 
 /// Bus associated to peripheral
-pub trait RccBus: crate::Sealed {
+pub trait CrmBus: crate::Sealed {
     /// Bus type;
     type Bus;
 }
 
 /// Enable/disable peripheral
 #[allow(clippy::missing_safety_doc)]
-pub trait Enable: RccBus {
+pub trait Enable: CrmBus {
     /// Enables peripheral
-    fn enable(crm: &RccRB);
+    fn enable(crm: &CrmRB);
 
     /// Disables peripheral
-    fn disable(crm: &RccRB);
+    fn disable(crm: &CrmRB);
 
     /// Check if peripheral enabled
     fn is_enabled() -> bool;
@@ -92,9 +92,9 @@ pub trait Enable: RccBus {
 
 /// Reset peripheral
 #[allow(clippy::missing_safety_doc)]
-pub trait Reset: RccBus {
+pub trait Reset: CrmBus {
     /// Resets peripheral
-    fn reset(crm: &RccRB);
+    fn reset(crm: &CrmRB);
 
     /// # Safety
     ///
@@ -108,7 +108,7 @@ pub trait Reset: RccBus {
 /// Extension trait that constrains the `CRM` peripheral
 pub trait RccExt {
     /// Constrains the `CRM` peripheral so it plays nicely with the other abstractions
-    fn constrain(self) -> Rcc;
+    fn constrain(self) -> Crm;
 }
 
 /// Frequency on bus that peripheral is connected in
@@ -125,7 +125,7 @@ pub trait BusTimerClock {
 
 impl<T> BusClock for T
 where
-    T: RccBus,
+    T: CrmBus,
     T::Bus: BusClock,
 {
     fn clock(clocks: &Clocks) -> Hertz {
@@ -135,7 +135,7 @@ where
 
 impl<T> BusTimerClock for T
 where
-    T: RccBus,
+    T: CrmBus,
     T::Bus: BusTimerClock,
 {
     fn timer_clock(clocks: &Clocks) -> Hertz {
@@ -154,11 +154,11 @@ macro_rules! bus_struct {
 
             $(#[$attr])*
             impl $busX {
-                pub(crate) fn enr(crm: &RccRB) -> &crm::$EN {
+                pub(crate) fn enr(crm: &CrmRB) -> &crm::$EN {
                     &crm.$en
                 }
 
-                pub(crate) fn rstr(crm: &RccRB) -> &crm::$RST {
+                pub(crate) fn rstr(crm: &CrmRB) -> &crm::$RST {
                     &crm.$rst
                 }
             }
@@ -203,8 +203,8 @@ impl BusTimerClock for APB2 {
 }
 
 impl RccExt for CRM {
-    fn constrain(self) -> Rcc {
-        Rcc {
+    fn constrain(self) -> Crm {
+        Crm {
             cfgr: CFGR {
                 // hse: None,
                 // hse_bypass: false,
@@ -220,7 +220,7 @@ impl RccExt for CRM {
 }
 
 /// Constrained CRM peripheral
-pub struct Rcc {
+pub struct Crm {
     pub cfgr: CFGR,
 }
 
@@ -273,7 +273,6 @@ pub struct Clocks {
     timclk2: Hertz,
     sysclk: Hertz,
     pll48clk: Option<Hertz>,
-
 }
 
 impl Clocks {
@@ -320,5 +319,4 @@ impl Clocks {
             .map(|freq| 48_000_000_u32.abs_diff(freq.raw()) <= 120_000)
             .unwrap_or_default()
     }
-
 }

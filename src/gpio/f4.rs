@@ -17,8 +17,8 @@ gpio!(GPIOA, gpioa, PA, 'A', PAn, [
     PA10: (pa10, 10, []),
     PA11: (pa11, 11, []),
     PA12: (pa12, 12, []),
-    PA13: (pa13, 13, [], super::Debugger), // SWDIO, PullUp VeryHigh speed
-    PA14: (pa14, 14, [], super::Debugger), // SWCLK, PullDown
+    PA13: (pa13, 13, [], super::Debugger), // JTMS-SWDIO, PullUp VeryHigh speed
+    PA14: (pa14, 14, [], super::Debugger), // JTCK-SWCLK, PullDown
     PA15: (pa15, 15, [], super::Debugger), // JTDI, PullUp
 ]);
 
@@ -27,7 +27,7 @@ gpio!(GPIOB, gpiob, PB, 'B', PBn, [
     PB0: (pb0, 0, []),
     PB1: (pb1, 1, []),
     PB2: (pb2, 2, []),
-    PB3: (pb3, 3, [], super::Debugger), // SWO, VeryHigh speed
+    PB3: (pb3, 3, [], super::Debugger), // JTDO-SWO, VeryHigh speed
     PB4: (pb4, 4, [], super::Debugger), // JTRST, PullUp
     PB5: (pb5, 5, []),
     PB6: (pb6, 6, []),
@@ -68,36 +68,12 @@ gpio!(GPIOD, gpiod, PD, 'D', PDn, [
     PD1: (pd1, 1, []),
     PD2: (pd2, 2, []),
     PD3: (pd3, 3, []),
-    PD4: (pd4, 4, []),
-    PD5: (pd5, 5, []),
-    PD6: (pd6, 6, []),
-    PD7: (pd7, 7, []),
-    PD8: (pd8, 8, []),
-    PD9: (pd9, 9, []),
-    PD10: (pd10, 10, []),
-    PD11: (pd11, 11, []),
-    PD12: (pd12, 12, []),
-    PD13: (pd13, 13, []),
-    PD14: (pd14, 14, []),
-    PD15: (pd15, 15, []),
 ]);
 
 #[cfg(feature = "at32f415")]
 gpio!(GPIOF, gpiof, PF, 'F', PFn, [
-    PF0: (pf0, 0, []),
-    PF1: (pf1, 1, []),
-    PF2: (pf2, 2, []),
-    PF3: (pf3, 3, []),
     PF4: (pf4, 4, []),
     PF5: (pf5, 5, []),
     PF6: (pf6, 6, []),
     PF7: (pf7, 7, []),
-    PF8: (pf8, 8, []),
-    PF9: (pf9, 9, []),
-    PF10: (pf10, 10, []),
-    PF11: (pf11, 11, []),
-    PF12: (pf12, 12, []),
-    PF13: (pf13, 13, []),
-    PF14: (pf14, 14, []),
-    PF15: (pf15, 15, []),
 ]);

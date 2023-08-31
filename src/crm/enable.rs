@@ -5,23 +5,23 @@ macro_rules! bus_enable {
     ($PER:ident => $bit:literal) => {
         impl Enable for crate::pac::$PER {
             #[inline(always)]
-            fn enable(rcc: &RccRB) {
+            fn enable(crm: &CrmRB) {
                 unsafe {
-                    bb::set(Self::Bus::enr(rcc), $bit);
+                    bb::set(Self::Bus::enr(crm), $bit);
                 }
                 // Stall the pipeline to work around erratum 2.1.13 (DM00037591)
                 cortex_m::asm::dsb();
             }
             #[inline(always)]
-            fn disable(rcc: &RccRB) {
+            fn disable(crm: &CrmRB) {
                 unsafe {
-                    bb::clear(Self::Bus::enr(rcc), $bit);
+                    bb::clear(Self::Bus::enr(crm), $bit);
                 }
             }
             #[inline(always)]
             fn is_enabled() -> bool {
-                let rcc = pac::CRM::ptr();
-                (Self::Bus::enr(unsafe { &*rcc }).read().bits() >> $bit) & 0x1 != 0
+                let crm = pac::CRM::ptr();
+                (Self::Bus::enr(unsafe { &*crm }).read().bits() >> $bit) & 0x1 != 0
             }
         }
     };
@@ -31,10 +31,10 @@ macro_rules! bus_reset {
     ($PER:ident => $bit:literal) => {
         impl Reset for crate::pac::$PER {
             #[inline(always)]
-            fn reset(rcc: &RccRB) {
+            fn reset(crm: &CrmRB) {
                 unsafe {
-                    bb::set(Self::Bus::rstr(rcc), $bit);
-                    bb::clear(Self::Bus::rstr(rcc), $bit);
+                    bb::set(Self::Bus::rstr(crm), $bit);
+                    bb::clear(Self::Bus::rstr(crm), $bit);
                 }
             }
         }
@@ -45,7 +45,7 @@ macro_rules! bus {
     ($($PER:ident => ($busX:ty, $bit:literal),)+) => {
         $(
             impl crate::Sealed for crate::pac::$PER {}
-            impl RccBus for crate::pac::$PER {
+            impl CrmBus for crate::pac::$PER {
                 type Bus = $busX;
             }
             bus_enable!($PER => $bit);
@@ -55,17 +55,30 @@ macro_rules! bus {
 }
 
 bus! {
-    CRC => (AHB, 12),
-    DMA1 => (AHB, 21),
-    DMA2 => (AHB, 22),
+    DMA1 => (AHB, 0),
+    DMA2 => (AHB, 1),
+    CRC => (AHB, 6),
 }
 
 bus! {
-    GPIOA => (AHB, 0),
-    GPIOB => (AHB, 1),
-    GPIOC => (AHB, 2),
-    GPIOD => (AHB, 3),
-    GPIOF => (AHB, 4),
+    GPIOA => (APB2, 2),
+    GPIOB => (APB2, 3),
+    GPIOC => (APB2, 4),
+}
+
+#[cfg(feature = "gpiod")]
+bus! {
+    GPIOD => (APB2, 5),
+}
+
+#[cfg(feature = "gpioe")]
+bus! {
+    GPIOE => (APB2, 6),
+}
+
+#[cfg(feature = "gpiof")]
+bus! {
+    GPIOF => (APB2, 7),
 }
 
 bus! {
@@ -86,7 +99,6 @@ bus! {
 bus! {
     ADC1 => (APB2, 8),
 }
-
 
 bus! {
     TMR1 => (APB2, 0),

@@ -304,7 +304,7 @@ where
                     w.bits((r.bits() & !(0b11 << offset)) | ((speed as u32) << offset))
                 });
             },
-            _ => unreachable!()
+            _ => unreachable!(),
         }
     }
 
