@@ -3,7 +3,8 @@
 #![no_std]
 #![no_main]
 
-use panic_halt as _;
+// use panic_halt as _;
+use panic_probe as _;
 
 use at32f4xx_hal as hal;
 use cortex_m_rt::entry;

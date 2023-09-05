@@ -6,6 +6,7 @@
 use cortex_m::peripheral::syst::SystClkSource;
 use cortex_m_rt::entry;
 use panic_halt as _;
+use defmt_rtt as _;
 
 use at32f4xx_hal::{pac, prelude::*};
 
@@ -26,6 +27,8 @@ fn main() -> ! {
     let mut led4 = gpioc.pc5.into_push_pull_output();
 
     syst.clear_current();
+
+    defmt::println!("Hello World!");
 
     loop {
         while !syst.has_wrapped() {}

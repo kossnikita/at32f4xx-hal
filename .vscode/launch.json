@@ -1,0 +1,36 @@
+{
+    /* 
+     * Requires the Rust Language Server (rust-analyzer) and Cortex-Debug extensions
+     * https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer
+     * https://marketplace.visualstudio.com/items?itemName=marus25.cortex-debug
+     */
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // "preLaunchTask": "${defaultBuildTask}",
+            "type": "probe-rs-debug",
+            "request": "launch",
+            "name": "probe-rs",
+            "cwd": "${workspaceFolder}",
+            "chip": "Cortex-M4",
+            "coreConfigs": [
+                {
+                    "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/examples/timer-syst",
+                    "svdFile": "${workspaceFolder}/AT32F415.svd",
+                    "rttEnabled": true,
+                    "rttChannelFormats": [
+                        {
+                            "channelNumber": 0,
+                            "dataFormat": "Defmt",
+                        }
+                    ]
+                }
+            ],
+            "env": {
+                "RUST_LOG": "info",
+                "DEFMT_LOG": "info"
+            },
+            "consoleLogLevel": "Info"
+        }
+    ]
+}
