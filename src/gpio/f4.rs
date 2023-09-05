@@ -17,9 +17,9 @@ gpio!(GPIOA, gpioa, PA, 'A', PAn, [
     PA10: (pa10, 10, []),
     PA11: (pa11, 11, []),
     PA12: (pa12, 12, []),
-    PA13: (pa13, 13, [], super::Debugger), // JTMS-SWDIO, PullUp VeryHigh speed
-    PA14: (pa14, 14, [], super::Debugger), // JTCK-SWCLK, PullDown
-    PA15: (pa15, 15, [], super::Debugger), // JTDI, PullUp
+    PA13: (pa13, 13, []), // JTMS-SWDIO, PullUp VeryHigh speed
+    PA14: (pa14, 14, []), // JTCK-SWCLK, PullDown
+    PA15: (pa15, 15, []), // JTDI, PullUp
 ]);
 
 #[cfg(feature = "at32f415")]
@@ -27,8 +27,8 @@ gpio!(GPIOB, gpiob, PB, 'B', PBn, [
     PB0: (pb0, 0, []),
     PB1: (pb1, 1, []),
     PB2: (pb2, 2, []),
-    PB3: (pb3, 3, [], super::Debugger), // JTDO-SWO, VeryHigh speed
-    PB4: (pb4, 4, [], super::Debugger), // JTRST, PullUp
+    PB3: (pb3, 3, []), // JTDO-SWO, VeryHigh speed
+    PB4: (pb4, 4, []), // JTRST, PullUp
     PB5: (pb5, 5, []),
     PB6: (pb6, 6, []),
     PB7: (pb7, 7, []),

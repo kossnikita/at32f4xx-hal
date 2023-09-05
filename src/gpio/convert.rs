@@ -110,7 +110,7 @@ impl<const P: char, const N: u8, MODE: PinMode> Pin<P, N, MODE> {
 
 macro_rules! change_mode {
     ($block:expr, $N:ident) => {
-        let offset = 4 * $N;
+        let offset = 4 * ($N % 8);
         unsafe {
             if MODE::IOMC != M::IOMC {
                 if $N < 8 {
