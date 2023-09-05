@@ -9,7 +9,7 @@
 //! let crm = dp.CRM.constrain();
 //! let clocks = crm
 //!     .cfgr
-//!     .use_hse(8.MHz())
+//!     .use_hext(8.MHz())
 //!     .sysclk(168.MHz())
 //!     .pclk1(24.MHz())
 //!     .i2s_clk(86.MHz())
@@ -42,7 +42,9 @@
 
 use crate::pac::{self, crm, CRM};
 
-use fugit::HertzU32 as Hertz;
+use fugit::{HertzU32 as Hertz, RateExtU32};
+
+use pll::MainPll;
 
 mod pll;
 
@@ -106,7 +108,7 @@ pub trait Reset: CrmBus {
 }
 
 /// Extension trait that constrains the `CRM` peripheral
-pub trait RccExt {
+pub trait CrmExt {
     /// Constrains the `CRM` peripheral so it plays nicely with the other abstractions
     fn constrain(self) -> Crm;
 }
@@ -192,28 +194,27 @@ impl BusClock for APB2 {
 
 impl BusTimerClock for APB1 {
     fn timer_clock(clocks: &Clocks) -> Hertz {
-        clocks.timclk1
+        clocks.tmr1clk
     }
 }
 
 impl BusTimerClock for APB2 {
     fn timer_clock(clocks: &Clocks) -> Hertz {
-        clocks.timclk2
+        clocks.tmr2clk
     }
 }
 
-impl RccExt for CRM {
+impl CrmExt for CRM {
     fn constrain(self) -> Crm {
         Crm {
             cfgr: CFGR {
-                // hse: None,
-                // hse_bypass: false,
-                // hclk: None,
-                // pclk1: None,
-                // pclk2: None,
-                // sysclk: None,
-                // pll48clk: false,
-                // i2s_ckin: None,
+                hext: None,
+                hext_bypass: false,
+                hclk: None,
+                pclk1: None,
+                pclk2: None,
+                sclk: None,
+                pll48clk: false,
             },
         }
     }
@@ -225,37 +226,122 @@ pub struct Crm {
 }
 
 /// Built-in high speed clock frequency
-pub const HSI: u32 = 16_000_000; // Hz
+pub const HICK: u32 = 48_000_000; // Hz
 
 /// Minimum system clock frequency
-pub const SYSCLK_MIN: u32 = 12_500_000;
+pub const SYSCLK_MIN: u32 = 4_000_000;
 
 /// Maximum system clock frequency
-pub const SYSCLK_MAX: u32 = 168_000_000;
+pub const SYSCLK_MAX: u32 = 150_000_000;
 
 /// Maximum APB2 peripheral clock frequency
-pub const PCLK2_MAX: u32 = SYSCLK_MAX;
+pub const PCLK2_MAX: u32 = SYSCLK_MAX / 2;
 
 /// Maximum APB1 peripheral clock frequency
-pub const PCLK1_MAX: u32 = PCLK2_MAX / 2;
+pub const PCLK1_MAX: u32 = SYSCLK_MAX / 2;
 
 pub struct CFGR {
-    // hse: Option<u32>,
-    // hse_bypass: bool,
-    // hclk: Option<u32>,
-    // pclk1: Option<u32>,
-    // pclk2: Option<u32>,
-    // sysclk: Option<u32>,
-    // pll48clk: bool,
+    hext: Option<u32>,
+    hext_bypass: bool,
+    hclk: Option<u32>,
+    pclk1: Option<u32>,
+    pclk2: Option<u32>,
+    sclk: Option<u32>,
+    pll48clk: bool,
+}
 
-    // i2s_ckin: Option<u32>,
+impl CFGR {
+    /// Uses HEXT (external oscillator) instead of HICK (internal RC oscillator) as the clock source.
+    /// Will result in a hang if an external oscillator is not connected or it fails to start.
+    pub fn use_hext(mut self, freq: Hertz) -> Self {
+        self.hext = Some(freq.raw());
+        self
+    }
+
+    pub fn hclk(mut self, freq: Hertz) -> Self {
+        self.hclk = Some(freq.raw());
+        self
+    }
+
+    pub fn pclk1(mut self, freq: Hertz) -> Self {
+        self.pclk1 = Some(freq.raw());
+        self
+    }
+
+    pub fn pclk2(mut self, freq: Hertz) -> Self {
+        self.pclk2 = Some(freq.raw());
+        self
+    }
+
+    pub fn sclk(mut self, freq: Hertz) -> Self {
+        self.sclk = Some(freq.raw());
+        self
+    }
+
+    pub fn require_pll48clk(mut self) -> Self {
+        self.pll48clk = true;
+        self
+    }
+
+    /// Initialises the hardware according to CFGR state returning a Clocks instance.
+    /// Panics if overclocking is attempted.
+    pub fn freeze(self) -> Clocks {
+        self.freeze_internal(false)
+    }
+
+    /// Initialises the hardware according to CFGR state returning a Clocks instance.
+    /// Allows overclocking.
+    ///
+    /// # Safety
+    ///
+    /// This method does not check if the clocks are bigger or smaller than the officially
+    /// recommended.
+    pub unsafe fn freeze_unchecked(self) -> Clocks {
+        self.freeze_internal(true)
+    }
+
+    #[inline(always)]
+    fn pll_setup(&self, pllsrcclk: u32, pllsysclk: Option<u32>) -> PllSetup {
+        let main_pll = MainPll::fast_setup(
+            pllsrcclk,
+            self.hext.is_some(),
+            Some(false),
+            pllsysclk,
+            self.pll48clk,
+        );
+        PllSetup {
+            use_pll: main_pll.use_pll,
+            pllsysclk: main_pll.pllsclk,
+            pll48clk: main_pll.pll48clk,
+        }
+    }
+
+    fn freeze_internal(self, unchecked: bool) -> Clocks {
+        let crm = unsafe { &*CRM::ptr() };
+
+        let pllsrcclk = self.hext.unwrap_or(HICK);
+        let sclk = self.sclk.unwrap_or(pllsrcclk);
+        let sclk_on_pll = sclk != pllsrcclk;
+
+        let plls = self.pll_setup(pllsrcclk, sclk_on_pll.then_some(sclk));
+
+        let clocks = Clocks {
+            sclk: sclk.Hz(),
+            hclk: 1.Hz(),
+            pclk1: 1.Hz(),
+            pclk2: 1.Hz(),
+            tmr1clk: 1.Hz(),
+            tmr2clk: 1.Hz(),
+            usb48m: Some(1.Hz()),
+        };
+        clocks
+    }
 }
 
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 struct PllSetup {
     use_pll: bool,
-
     pllsysclk: Option<u32>,
     pll48clk: Option<u32>,
 }
@@ -266,13 +352,13 @@ struct PllSetup {
 #[cfg_attr(feature = "defmt", derive(defmt::Format))]
 #[derive(Copy, Clone, PartialEq, Eq, Debug)]
 pub struct Clocks {
+    sclk: Hertz,
     hclk: Hertz,
     pclk1: Hertz,
     pclk2: Hertz,
-    timclk1: Hertz,
-    timclk2: Hertz,
-    sysclk: Hertz,
-    pll48clk: Option<Hertz>,
+    tmr1clk: Hertz,
+    tmr2clk: Hertz,
+    usb48m: Option<Hertz>,
 }
 
 impl Clocks {
@@ -292,30 +378,30 @@ impl Clocks {
     }
 
     /// Returns the frequency for timers on APB1
-    pub fn timclk1(&self) -> Hertz {
-        self.timclk1
+    pub fn tmr1clk(&self) -> Hertz {
+        self.tmr1clk
     }
 
     /// Returns the frequency for timers on APB1
-    pub fn timclk2(&self) -> Hertz {
-        self.timclk2
+    pub fn tmr2clk(&self) -> Hertz {
+        self.tmr2clk
     }
 
     /// Returns the system (core) frequency
-    pub fn sysclk(&self) -> Hertz {
-        self.sysclk
+    pub fn sclk(&self) -> Hertz {
+        self.sclk
     }
 
     /// Returns the frequency of the PLL48 clock line
-    pub fn pll48clk(&self) -> Option<Hertz> {
-        self.pll48clk
+    pub fn usb48m(&self) -> Option<Hertz> {
+        self.usb48m
     }
 
     /// Returns true if the PLL48 clock is within USB
     /// specifications. It is required to use the USB functionality.
-    pub fn is_pll48clk_valid(&self) -> bool {
+    pub fn is_usb48m_valid(&self) -> bool {
         // USB specification allows +-0.25%
-        self.pll48clk
+        self.usb48m
             .map(|freq| 48_000_000_u32.abs_diff(freq.raw()) <= 120_000)
             .unwrap_or_default()
     }

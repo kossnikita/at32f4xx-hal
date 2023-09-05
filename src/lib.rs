@@ -100,8 +100,11 @@ pub use crate::pac::interrupt;
 
 pub mod bb;
 pub mod crm;
+pub mod flash;
 pub mod gpio;
 pub mod prelude;
+pub mod signature;
+pub mod timer;
 
 mod sealed {
     pub trait Sealed {}

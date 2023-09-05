@@ -56,6 +56,7 @@
 
 use core::marker::PhantomData;
 
+// pub mod alt;
 mod convert;
 pub use convert::PinMode;
 mod partially_erased;
@@ -589,6 +590,8 @@ impl<const P: char> Gpio<P> {
             'A' => crate::pac::GPIOA::ptr(),
             'B' => crate::pac::GPIOB::ptr() as _,
             'C' => crate::pac::GPIOC::ptr() as _,
+            #[cfg(feature = "gpioe")]
+            'E' => crate::pac::GPIOE::ptr() as _,
             #[cfg(feature = "gpiod")]
             'D' => crate::pac::GPIOD::ptr() as _,
             #[cfg(feature = "gpiof")]

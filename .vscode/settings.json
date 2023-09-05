@@ -2,5 +2,7 @@
     "rust-analyzer.cargo.features": [
         "defmt",
         "at32f415"
-    ]
+    ],
+    "rust-analyzer.check.allTargets": false,
+    "rust-analyzer.cargo.target": "thumbv7em-none-eabi",
 }
