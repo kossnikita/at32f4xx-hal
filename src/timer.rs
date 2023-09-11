@@ -14,6 +14,8 @@ pub mod counter;
 pub use counter::*;
 pub mod delay;
 pub use delay::*;
+pub mod pwm;
+pub use pwm::*;
 
 /// Timer wrapper.
 ///
@@ -36,6 +38,15 @@ pub enum Channel {
     C3 = 2,
     C4 = 3,
 }
+
+pub use crate::gpio::alt::TmrCPin as CPin;
+
+/// Channel wrapper
+pub struct Ch<const C: u8, const COMP: bool>;
+pub const C1: u8 = 0;
+pub const C2: u8 = 1;
+pub const C3: u8 = 2;
+pub const C4: u8 = 3;
 
 /// Enum for IO polarity
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -635,6 +646,14 @@ impl<TMR: Instance + MasterTimer, const FREQ: u32> FTimer<TMR, FREQ> {
     pub fn set_master_mode(&mut self, mode: TMR::Ptos) {
         self.tmr.master_mode(mode)
     }
+}
+
+#[inline(always)]
+pub(crate) const fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u32) {
+    let ticks = clock / freq;
+    let psc = (ticks - 1) / (1 << 16);
+    let arr = ticks / (psc + 1) - 1;
+    (psc as u16, arr)
 }
 
 hal!(pac::TMR1: [Timer1, u16, c: (4), m: tmr1,]);

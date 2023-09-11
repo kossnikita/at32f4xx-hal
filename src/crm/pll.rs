@@ -23,22 +23,31 @@ impl MainPll {
             };
         }
 
+        // Sysclk output divisor must be one of 1, 2, 4, 8, 16 or 32
+        let sclk_div = core::cmp::min(32, (432_000_000 / sclk) & !1);
+
         unsafe { &*CRM::ptr() }.cfg.modify(|_, w| unsafe {
             w.pllrcs().bit(use_hext);
             w.pllhextdiv().bit(hext_div2.unwrap_or(false))
         });
 
+        let (pll_ms, pll_ms_bits) = (1, 1);
+        let (pll_ns, pll_ns_bits) = (192, 192);
+        let (pll_fr, pll_fr_bits) = (8, 3);
+
         unsafe { &*CRM::ptr() }.pll.write(|w| unsafe {
             w.pllcfgen().set_bit();
-            w.pll_ms().bits(0x1);
-            w.pll_ns().bits(0x1F);
-            w.pll_fr().bits(0x0)
+            w.pll_ms().bits(pll_ms_bits);
+            w.pll_ns().bits(pll_ns_bits);
+            w.pll_fr().bits(pll_fr_bits)
         });
+
+        let real_pllsclk = pllsrcclk / pll_ms * pll_ns / pll_fr;
 
         MainPll {
             use_pll: true,
-            pllsclk: pllsclk,
-            pll48clk: if pll48clk { Some(48_000_000) } else { None },
+            pllsclk: Some(real_pllsclk),
+            pll48clk: if pll48clk { Some(real_pllsclk) } else { None },
         }
     }
 }

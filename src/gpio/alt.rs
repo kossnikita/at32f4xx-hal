@@ -1,75 +1,74 @@
 mod f4;
 pub use f4::*;
 
-macro_rules! extipin {
-    ($( $(#[$attr:meta])* $PX:ident,)*) => {
-        fn make_interrupt_source(&mut self, _syscfg: &mut $crate::syscfg::SysCfg) {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.make_interrupt_source(_syscfg),
-                )*
-                _ => {},
-            }
+// macro_rules! extipin {
+//     ($( $(#[$attr:meta])* $PX:ident,)*) => {
+//         fn make_interrupt_source(&mut self, _syscfg: &mut $crate::syscfg::SysCfg) {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.make_interrupt_source(_syscfg),
+//                 )*
+//                 _ => {},
+//             }
 
-        }
+//         }
 
-        fn trigger_on_edge(&mut self, _exti: &mut $crate::pac::EXTI, _level: $crate::gpio::Edge) {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.trigger_on_edge(_exti, _level),
-                )*
-                _ => {},
-            }
-        }
+//         fn trigger_on_edge(&mut self, _exti: &mut $crate::pac::EXTI, _level: $crate::gpio::Edge) {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.trigger_on_edge(_exti, _level),
+//                 )*
+//                 _ => {},
+//             }
+//         }
 
-        fn enable_interrupt(&mut self, _exti: &mut $crate::pac::EXTI) {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.enable_interrupt(_exti),
-                )*
-                _ => {},
-            }
-        }
-        fn disable_interrupt(&mut self, _exti: &mut $crate::pac::EXTI) {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.disable_interrupt(_exti),
-                )*
-                _ => {},
-            }
-        }
-        fn clear_interrupt_pending_bit(&mut self) {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.clear_interrupt_pending_bit(),
-                )*
-                _ => {},
-            }
-        }
-        fn check_interrupt(&self) -> bool {
-            match self {
-                $(
-                    $(#[$attr])*
-                    Self::$PX(p) => p.check_interrupt(),
-                )*
-                _ => false,
-            }
-        }
-    };
-}
-use extipin;
+//         fn enable_interrupt(&mut self, _exti: &mut $crate::pac::EXTI) {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.enable_interrupt(_exti),
+//                 )*
+//                 _ => {},
+//             }
+//         }
+//         fn disable_interrupt(&mut self, _exti: &mut $crate::pac::EXTI) {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.disable_interrupt(_exti),
+//                 )*
+//                 _ => {},
+//             }
+//         }
+//         fn clear_interrupt_pending_bit(&mut self) {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.clear_interrupt_pending_bit(),
+//                 )*
+//                 _ => {},
+//             }
+//         }
+//         fn check_interrupt(&self) -> bool {
+//             match self {
+//                 $(
+//                     $(#[$attr])*
+//                     Self::$PX(p) => p.check_interrupt(),
+//                 )*
+//                 _ => false,
+//             }
+//         }
+//     };
+// }
+// use extipin;
 
 macro_rules! pin {
     ( $($(#[$docs:meta])* <$name:ident, $Otype:ident> for $(no: $NoPin:ident,)? [$(
         $(#[$attr:meta])* $PX:ident<$A:literal $(, Speed::$Speed:ident)?>,
     )*],)*) => {
         $(
-            #[derive(Debug)]
             $(#[$docs])*
             pub enum $name {
                 $(
@@ -123,10 +122,10 @@ macro_rules! pin {
                 }
             }
 
-            #[allow(unreachable_patterns)]
-            impl $crate::gpio::ExtiPin for $name {
-                extipin! { $( $(#[$attr])* $PX, )* }
-            }
+            // #[allow(unreachable_patterns)]
+            // impl $crate::gpio::ExtiPin for $name {
+            //     extipin! { $( $(#[$attr])* $PX, )* }
+            // }
 
             $(
                 impl From<$NoPin<$Otype>> for $name {
@@ -179,7 +178,6 @@ macro_rules! pin {
             $(#[$attr:meta])* $PX:ident<$A:literal>,
     )*],)*) => {
         $(
-            #[derive(Debug)]
             $(#[$docs])*
             pub enum $name<Otype = $DefaultOtype> {
                 $(
@@ -233,10 +231,10 @@ macro_rules! pin {
                 }
             }
 
-            #[allow(unreachable_patterns)]
-            impl<Otype> $crate::gpio::ExtiPin for $name<Otype> {
-                extipin! { $( $(#[$attr])* $PX, )* }
-            }
+            // #[allow(unreachable_patterns)]
+            // impl<Otype> $crate::gpio::ExtiPin for $name<Otype> {
+            //     extipin! { $( $(#[$attr])* $PX, )* }
+            // }
 
             $(
                 impl<Otype> From<$NoPin<Otype>> for $name<Otype> {
@@ -411,21 +409,21 @@ pub trait SpiCommon {
 // Timer pins
 
 /// Input capture / Output compare channel `C`
-pub trait TimCPin<const C: u8> {
+pub trait TmrCPin<const C: u8> {
     type Ch<Otype>;
 }
 
 /// Complementary output channel `C`
-pub trait TimNCPin<const C: u8> {
+pub trait TmrNCPin<const C: u8> {
     type ChN<Otype>;
 }
 
 /// Break input
-pub trait TimBkin {
+pub trait TmrBkin {
     type Bkin;
 }
 
 /// External trigger timer input
-pub trait TimEtr {
+pub trait TmrEtr {
     type Etr;
 }

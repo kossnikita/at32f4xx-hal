@@ -56,7 +56,7 @@
 
 use core::marker::PhantomData;
 
-// pub mod alt;
+pub mod alt;
 mod convert;
 pub use convert::PinMode;
 mod partially_erased;

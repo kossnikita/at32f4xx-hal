@@ -1,7 +1,7 @@
 use super::*;
 use crate::gpio::{self, NoPin, OpenDrain, PushPull};
 
-pub mod tim1 {
+pub mod tmr1 {
     use super::*;
 
     pin! {
@@ -58,33 +58,33 @@ pub mod tim1 {
         ],
     }
 
-    use crate::pac::TIM1 as TIM;
+    use crate::pac::TMR1 as TMR;
 
-    impl TimCPin<0> for TIM {
+    impl TmrCPin<0> for TMR {
         type Ch<Otype> = Ch1<Otype>;
     }
-    impl TimCPin<1> for TIM {
+    impl TmrCPin<1> for TMR {
         type Ch<Otype> = Ch2<Otype>;
     }
-    impl TimCPin<2> for TIM {
+    impl TmrCPin<2> for TMR {
         type Ch<Otype> = Ch3<Otype>;
     }
-    impl TimCPin<3> for TIM {
+    impl TmrCPin<3> for TMR {
         type Ch<Otype> = Ch4<Otype>;
     }
-    impl TimNCPin<0> for TIM {
+    impl TmrNCPin<0> for TMR {
         type ChN<Otype> = Ch1N<Otype>;
     }
-    impl TimNCPin<1> for TIM {
+    impl TmrNCPin<1> for TMR {
         type ChN<Otype> = Ch2N<Otype>;
     }
-    impl TimNCPin<2> for TIM {
+    impl TmrNCPin<2> for TMR {
         type ChN<Otype> = Ch3N<Otype>;
     }
-    impl TimBkin for TIM {
+    impl TmrBkin for TMR {
         type Bkin = Bkin;
     }
-    impl TimEtr for TIM {
+    impl TmrEtr for TMR {
         type Etr = Etr;
     }
 }
