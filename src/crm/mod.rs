@@ -343,6 +343,8 @@ impl CFGR {
         };
         let pllsrcclk = self.hext.unwrap_or(HICK / 12);
 
+        let hick_div = false;
+
         let plls = self.pll_setup(pllsrcclk, sclk_on_pll.then_some(sclk));
         let sclk = if sclk_on_pll {
             plls.pllsysclk.unwrap()
@@ -402,6 +404,12 @@ impl CFGR {
         assert!(unchecked || pclk2 <= PCLK2_MAX);
 
         Self::flash_setup(sclk);
+
+        if !hick_div {
+            // disable HICK /6 division
+            crm.misc1.modify(|_,w| w.hickdiv().bit(!hick_div));
+            crm.misc2.modify(|_,w| w.hick_to_sclk().bit(!hick_div));
+        }
 
         if self.hext.is_some() {
             // enable HEXT and wait for it to be ready

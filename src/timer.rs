@@ -72,6 +72,64 @@ bitflags::bitflags! {
     }
 }
 
+#[derive(Debug, Eq, PartialEq, Copy, Clone)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub enum Error {
+    /// Timer is disabled
+    Disabled,
+    WrongAutoReload,
+}
+
+pub trait TimerExt: Sized {
+    /// Non-blocking [Counter] with custom fixed precision
+    fn counter<const FREQ: u32>(self, clocks: &Clocks) -> Counter<Self, FREQ>;
+    /// Non-blocking [Counter] with fixed precision of 1 ms (1 kHz sampling)
+    ///
+    /// Can wait from 2 ms to 65 sec for 16-bit timer and from 2 ms to 49 days for 32-bit timer.
+    ///
+    /// NOTE: don't use this if your system frequency more than 65 MHz
+    fn counter_ms(self, clocks: &Clocks) -> CounterMs<Self> {
+        self.counter::<1_000>(clocks)
+    }
+    /// Non-blocking [Counter] with fixed precision of 1 μs (1 MHz sampling)
+    ///
+    /// Can wait from 2 μs to 65 ms for 16-bit timer and from 2 μs to 71 min for 32-bit timer.
+    fn counter_us(self, clocks: &Clocks) -> CounterUs<Self> {
+        self.counter::<1_000_000>(clocks)
+    }
+    /// Non-blocking [Counter] with dynamic precision which uses `Hertz` as Duration units
+    fn counter_hz(self, clocks: &Clocks) -> CounterHz<Self>;
+
+    /// Blocking [Delay] with custom fixed precision
+    fn delay<const FREQ: u32>(self, clocks: &Clocks) -> Delay<Self, FREQ>;
+    /// Blocking [Delay] with fixed precision of 1 ms (1 kHz sampling)
+    ///
+    /// Can wait from 2 ms to 49 days.
+    ///
+    /// NOTE: don't use this if your system frequency more than 65 MHz
+    fn delay_ms(self, clocks: &Clocks) -> DelayMs<Self> {
+        self.delay::<1_000>(clocks)
+    }
+    /// Blocking [Delay] with fixed precision of 1 μs (1 MHz sampling)
+    ///
+    /// Can wait from 2 μs to 71 min.
+    fn delay_us(self, clocks: &Clocks) -> DelayUs<Self> {
+        self.delay::<1_000_000>(clocks)
+    }
+}
+
+impl<TMR: Instance> TimerExt for TMR {
+    fn counter<const FREQ: u32>(self, clocks: &Clocks) -> Counter<Self, FREQ> {
+        FTimer::new(self, clocks).counter()
+    }
+    fn counter_hz(self, clocks: &Clocks) -> CounterHz<Self> {
+        Timer::new(self, clocks).counter_hz()
+    }
+    fn delay<const FREQ: u32>(self, clocks: &Clocks) -> Delay<Self, FREQ> {
+        FTimer::new(self, clocks).delay()
+    }
+}
+
 pub trait SysTimerExt: Sized {
     /// Creates timer which takes [Hertz] as Duration
     fn counter_hz(self, clocks: &Clocks) -> SysCounterHz;
@@ -96,14 +154,6 @@ impl SysTimerExt for SYST {
     fn delay(self, clocks: &Clocks) -> SysDelay {
         Timer::syst_external(self, clocks).delay()
     }
-}
-
-#[derive(Debug, Eq, PartialEq, Copy, Clone)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
-pub enum Error {
-    /// Timer is disabled
-    Disabled,
-    WrongAutoReload,
 }
 
 /// Interrupt events
@@ -385,6 +435,7 @@ macro_rules! hal {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
                         unsafe { bb::write(&tmr.cctrl, c*4, b); }
+                        tmr.brk.modify(|_, w|  w.oen().set_bit());
                     }
                 }
 
@@ -465,7 +516,7 @@ macro_rules! with_dmar {
 }
 
 macro_rules! with_pwm {
-    ($TMR:ty: [$($Cx:ident, $ccmrx_output:ident, $ocxpe:ident, $ocxm:ident;)+] $(, $aoe:ident)?) => {
+    ($TMR:ty: [$($Cx:ident, $ccmrx_output:ident, $cxoben:ident, $cxoctrl:ident;)+] $(, $aoe:ident)?) => {
         impl WithPwm for $TMR {
             #[inline(always)]
             fn preload_output_channel_in_mode(&mut self, channel: Channel, mode: Ocm) {
@@ -473,7 +524,7 @@ macro_rules! with_pwm {
                     $(
                         Channel::$Cx => {
                             self.$ccmrx_output()
-                            .modify(|_, w| unsafe {w.$ocxpe().set_bit().$ocxm().bits(mode as _) });
+                            .modify(|_, w| unsafe {w.$cxoben().set_bit().$cxoctrl().bits(mode as _) });
                         }
                     )+
                     #[allow(unreachable_patterns)]
@@ -538,7 +589,7 @@ impl<TMR: Instance> Timer<TMR> {
 
     /// Starts listening for an `event`
     ///
-    /// Note, you will also have to enable the TIM2 interrupt in the NVIC to start
+    /// Note, you will also have to enable the TMR2 interrupt in the NVIC to start
     /// receiving events.
     pub fn listen(&mut self, event: Event) {
         self.tmr.listen_interrupt(event, true);
@@ -618,7 +669,7 @@ impl<TMR: Instance, const FREQ: u32> FTimer<TMR, FREQ> {
 
     /// Starts listening for an `event`
     ///
-    /// Note, you will also have to enable the TIM2 interrupt in the NVIC to start
+    /// Note, you will also have to enable the TMR2 interrupt in the NVIC to start
     /// receiving events.
     pub fn listen(&mut self, event: Event) {
         self.tmr.listen_interrupt(event, true);
