@@ -29,10 +29,8 @@ impl<TMR: Instance> CounterHz<TMR> {
 }
 
 impl<TMR: Instance> CounterHz<TMR> {
-    pub fn start(&mut self, timeout: Hertz) -> Result<(), Error> {
+    pub fn start(&mut self, _timeout: Hertz) -> Result<(), Error> {
         todo!();
-
-        Ok(())
     }
 
     pub fn wait(&mut self) -> nb::Result<(), Error> {

@@ -88,8 +88,6 @@ impl FlashExt for FLASH {
     }
 }
 
-const PSIZE_X8: u8 = 0b00;
-
 /// Read-only flash
 ///
 /// # Examples

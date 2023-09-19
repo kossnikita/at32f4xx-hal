@@ -36,10 +36,13 @@
 //! After creating structures you can dynamically enable main or complementary channels with `enable` and `enable_complementary`
 //! and change their polarity with `set_polarity` and `set_complementary_polarity`.
 
-use super::{compute_arr_presc, Advanced, CPin, Channel, FTimer, IdleState, Instance, Ocm, Polarity, Timer, WithPwm,};
+use super::{
+    compute_arr_presc, Advanced, CPin, Channel, FTimer, IdleState, Instance, Ocm, Polarity, Timer,
+    WithPwm,
+};
 pub use super::{Ch, C1, C2, C3, C4};
-use crate::gpio::{OpenDrain, PushPull};
 use crate::crm::Clocks;
+use crate::gpio::PushPull;
 use core::marker::PhantomData;
 use core::ops::{Deref, DerefMut};
 use fugit::{HertzU32 as Hertz, TimerDurationU32};

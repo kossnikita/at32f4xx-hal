@@ -201,31 +201,31 @@ pub enum Edge {
 }
 
 macro_rules! af {
-    ($($i:literal: $AFi:ident),+) => {
+    ($($i:literal: $MUXi:ident),+) => {
         $(
             #[doc = concat!("Alternate function ", $i, " (type state)" )]
-            pub type $AFi<Otype = PushPull> = Alternate<$i, Otype>;
+            pub type $MUXi<Otype = PushPull> = Alternate<$i, Otype>;
         )+
     };
 }
 
 af!(
-    0: AF0,
-    1: AF1,
-    2: AF2,
-    3: AF3,
-    4: AF4,
-    5: AF5,
-    6: AF6,
-    7: AF7,
-    8: AF8,
-    9: AF9,
-    10: AF10,
-    11: AF11,
-    12: AF12,
-    13: AF13,
-    14: AF14,
-    15: AF15
+    0: MUX0,
+    1: MUX1,
+    2: MUX2,
+    3: MUX3,
+    4: MUX4,
+    5: MUX5,
+    6: MUX6,
+    7: MUX7,
+    8: MUX8,
+    9: MUX9,
+    10: MUX10,
+    11: MUX11,
+    12: MUX12,
+    13: MUX13,
+    14: MUX14,
+    15: MUX15
 );
 
 /// Generic pin type

@@ -31,7 +31,7 @@ fn main() -> ! {
     let max_duty = ch1.get_max_duty();
     ch1.set_duty(max_duty / 2);
     ch1.enable();
-    
+
     loop {
         cortex_m::asm::nop();
     }

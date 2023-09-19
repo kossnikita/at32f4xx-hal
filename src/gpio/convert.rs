@@ -108,6 +108,7 @@ impl<const P: char, const N: u8, MODE: PinMode> Pin<P, N, MODE> {
     }
 }
 
+#[cfg(feature = "legacy-gpio")]
 macro_rules! change_mode {
     ($block:expr, $N:ident) => {
         let offset = 4 * ($N % 8);
@@ -134,6 +135,34 @@ macro_rules! change_mode {
                         w.bits(r.bits() & !(0b1100 << offset) | (M::IOFC << (offset + 2)))
                     });
                 }
+            }
+        }
+    };
+}
+#[cfg(feature = "new-gpio")]
+macro_rules! change_mode {
+    ($block:expr, $N:ident) => {
+        let offset = 2 * $N;
+        unsafe {
+            if MODE::IOMC != M::IOMC {
+                $block
+                    .cfgr
+                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+            }
+            if MODE::OM != M::OM {
+                $block
+                    .cfgr
+                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+            }
+            if MODE::ODRV != M::ODRV {
+                $block
+                    .cfgr
+                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+            }
+            if MODE::PUPD != M::PUPD {
+                $block
+                    .cfgr
+                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
             }
         }
     };
@@ -289,46 +318,101 @@ impl<const P: char, const N: u8, CURRENT: PinMode, ORIG: PinMode> Drop
 /// Marker trait for valid pin modes (type state).
 ///
 /// It can not be implemented by outside types.
+#[cfg(feature = "legacy-gpio")]
 pub trait PinMode: crate::Sealed {
     // These constants are used to implement the pin configuration code.
     // They are not part of public API.
 
     #[doc(hidden)]
+    const IOMC: u32 = u32::MAX;
+    #[doc(hidden)]
     const IOFC: u32 = u32::MAX;
+}
+
+#[cfg(feature = "new-gpio")]
+pub trait PinMode: crate::Sealed {
+    // These constants are used to implement the pin configuration code.
+    // They are not part of public API.
+
     #[doc(hidden)]
     const IOMC: u32 = u32::MAX;
+    #[doc(hidden)]
+    const OM: u32 = u32::MAX;
+    #[doc(hidden)]
+    const ODRV: u32 = u32::MAX;
+    #[doc(hidden)]
+    const PUPD: u32 = u32::MAX;
 }
 
 impl crate::Sealed for Input {}
+
+#[cfg(feature = "legacy-gpio")]
 impl PinMode for Input {
+    const IOMC: u32 = 0b00;
     const IOFC: u32 = 0b01;
+}
+
+#[cfg(feature = "new-gpio")]
+impl PinMode for Input {
     const IOMC: u32 = 0b00;
 }
 
 impl crate::Sealed for Analog {}
+#[cfg(feature = "legacy-gpio")]
 impl PinMode for Analog {
-    const IOFC: u32 = 0b00;
     const IOMC: u32 = 0b00;
+    const IOFC: u32 = 0b00;
+}
+
+#[cfg(feature = "new-gpio")]
+impl PinMode for Analog {
+    const IOMC: u32 = 0b11;
 }
 
 impl<Otype> crate::Sealed for Output<Otype> {}
+#[cfg(feature = "legacy-gpio")]
 impl PinMode for Output<OpenDrain> {
-    const IOFC: u32 = 0b01;
     const IOMC: u32 = 0b10;
+    const IOFC: u32 = 0b01;
 }
 
+#[cfg(feature = "new-gpio")]
+impl PinMode for Output<OpenDrain> {
+    const IOMC: u32 = 0b01;
+    const OM: u32 = 0b1;
+}
+
+#[cfg(feature = "legacy-gpio")]
 impl PinMode for Output<PushPull> {
+    const IOMC: u32 = 0b10;
     const IOFC: u32 = 0b00;
+}
+
+#[cfg(feature = "new-gpio")]
+impl PinMode for Output<PushPull> {
     const IOMC: u32 = 0b10;
 }
 
 impl<const A: u8, Otype> crate::Sealed for Alternate<A, Otype> {}
+#[cfg(feature = "legacy-gpio")]
 impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
-    const IOFC: u32 = 0b11;
     const IOMC: u32 = 0b10;
+    const IOFC: u32 = 0b11;
 }
 
+#[cfg(feature = "new-gpio")]
+impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
+    const OM: u32 = 0b1;
+}
+
+#[cfg(feature = "legacy-gpio")]
 impl<const A: u8> PinMode for Alternate<A, PushPull> {
-    const IOFC: u32 = 0b10;
     const IOMC: u32 = 0b10;
+    const IOFC: u32 = 0b10;
+}
+
+#[cfg(feature = "new-gpio")]
+impl<const A: u8> PinMode for Alternate<A, PushPull> {
+    const IOMC: u32 = 0b10;
+    const OM: u32 = 0b0;
 }

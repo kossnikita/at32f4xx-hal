@@ -424,6 +424,6 @@ pub trait TmrBkin {
 }
 
 /// External trigger timer input
-pub trait TmrEtr {
-    type Etr;
+pub trait TmrExt {
+    type Ext;
 }

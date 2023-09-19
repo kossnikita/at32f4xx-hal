@@ -19,11 +19,11 @@ pub use pwm::*;
 
 /// Timer wrapper.
 ///
-/// This wrapper can be used both for the system tmrer (SYST) or the
-/// general-purpose tmrers (TMRx).
+/// This wrapper can be used both for the system timer (SYST) or the
+/// general-purpose timer (TMRx).
 ///
-/// Note: If you want to use the tmrer to sleep a certain amount of tmre, use
-/// [`Delay`](`crate::tmrer::delay::Delay`).
+/// Note: If you want to use the timer to sleep a certain amount of timer, use
+/// [`Delay`](`crate::timer::delay::Delay`).
 pub struct Timer<TMR> {
     pub(crate) tmr: TMR,
     pub(crate) clk: Hertz,
@@ -268,6 +268,8 @@ mod sealed {
         fn set_dtg_value(value: u8);
         fn read_dtg_value() -> u8;
         fn idle_state(channel: u8, comp: bool, s: IdleState);
+        fn enable_output(&mut self);
+        fn disable_output(&mut self);
     }
 
     pub trait WithPwm: WithPwmCommon {
@@ -435,7 +437,6 @@ macro_rules! hal {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
                         unsafe { bb::write(&tmr.cctrl, c*4, b); }
-                        tmr.brk.modify(|_, w|  w.oen().set_bit());
                     }
                 }
 
@@ -484,6 +485,18 @@ macro_rules! hal {
                                 unsafe { bb::write(&tmr.cr2, c*2 + 9, s == IdleState::Set); }
                             }
                         }
+                    }
+
+                    #[inline(always)]
+                    fn enable_output(&mut self){
+                        let tmr = unsafe { &*<$TMR>::ptr() };
+                        tmr.brk.modify(|_, w|  w.oen().set_bit());
+                    }
+
+                    #[inline(always)]
+                    fn disable_output(&mut self){
+                        let tmr = unsafe { &*<$TMR>::ptr() };
+                        tmr.brk.modify(|_, w|  w.oen().clear_bit());
                     }
                 }
             )?
@@ -707,4 +720,17 @@ pub(crate) const fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u32) {
     (psc as u16, arr)
 }
 
+#[cfg(feature = "tmr1")]
 hal!(pac::TMR1: [Timer1, u16, c: (4), m: tmr1,]);
+
+#[cfg(feature = "tmr2")]
+hal!(pac::TMR2: [Timer2, u32, c: (4), m: tmr2,]);
+
+#[cfg(feature = "tmr3")]
+hal!(pac::TMR3: [Timer3, u16, c: (4), m: tmr3,]);
+
+#[cfg(feature = "tmr4")]
+hal!(pac::TMR4: [Timer4, u16, c: (4), m: tmr4,]);
+
+#[cfg(feature = "tmr5")]
+hal!(pac::TMR5: [Timer5, u32, c: (4), m: tmr5,]);

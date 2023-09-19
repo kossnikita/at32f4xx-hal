@@ -83,6 +83,6 @@ pub use crate::timer::MonoTimerExt as _;
 // pub use crate::timer::PwmExt as _at32f4xx_hal_timer_PwmExt;
 // #[cfg(feature = "rtic")]
 // pub use crate::timer::SysMonoTimerExt as _at32f4xx_hal_timer_SysMonoTimerExt;
+pub use crate::timer::PwmExt as _at32f4xx_hal_timer_PwmExt;
 pub use crate::timer::SysTimerExt as _at32f4xx_hal_timer_SysCounterExt;
 pub use crate::timer::TimerExt as _at32f4xx_hal_timer_TimerExt;
-pub use crate::timer::PwmExt as _at32f4xx_hal_timer_PwmExt;

@@ -1,6 +1,7 @@
 use super::*;
-use crate::gpio::{self, NoPin, OpenDrain, PushPull};
+use crate::gpio::{self, PushPull};
 
+#[cfg(feature = "tmr1")]
 pub mod tmr1 {
     use super::*;
 
@@ -8,6 +9,11 @@ pub mod tmr1 {
         <Ch1> default: PushPull for [
             PA8<1>,
 
+            #[cfg(feature = "f403a-peripheral")]
+            PE9<1>,
+
+            #[cfg(feature = "f415-peripheral")]
+            PC6<1>,
         ],
 
         <Ch1N> default: PushPull for [
@@ -53,7 +59,7 @@ pub mod tmr1 {
             PB12<1>,
         ],
 
-        <Etr, PushPull> for [
+        <Ext, PushPull> for [
             PA12<1>,
         ],
     }
@@ -84,7 +90,67 @@ pub mod tmr1 {
     impl TmrBkin for TMR {
         type Bkin = Bkin;
     }
-    impl TmrEtr for TMR {
-        type Etr = Etr;
+    impl TmrExt for TMR {
+        type Ext = Ext;
+    }
+}
+
+#[cfg(feature = "tmr2")]
+pub mod tmr2 {
+    use super::*;
+
+    pin! {
+        <Ch1> default: PushPull for [
+            PA0<1>,
+
+            PA15<1>,
+
+        ],
+
+        <Ch2> default: PushPull for [
+            PA1<1>,
+
+            PB3<1>,
+
+        ],
+
+        <Ch3> default: PushPull for [
+            PA2<1>,
+
+            PB10<1>,
+        ],
+
+        <Ch4> default: PushPull for [
+            PA3<1>,
+
+            PB11<1>,
+        ],
+    }
+
+    pin! {
+        <Ext, PushPull> for [
+            PA0<1>,
+
+            PA15<1>,
+
+        ],
+    }
+
+    use crate::pac::TMR2 as TMR;
+
+    impl TmrCPin<0> for TMR {
+        type Ch<Otype> = Ch1<Otype>;
+    }
+    impl TmrCPin<1> for TMR {
+        type Ch<Otype> = Ch2<Otype>;
+    }
+    impl TmrCPin<2> for TMR {
+        type Ch<Otype> = Ch3<Otype>;
+    }
+    impl TmrCPin<3> for TMR {
+        type Ch<Otype> = Ch4<Otype>;
+    }
+    impl TmrExt for TMR {
+        type Ext = Ext;
     }
 }

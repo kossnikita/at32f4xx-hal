@@ -24,9 +24,9 @@ impl MainPll {
         }
 
         // Sysclk output divisor must be one of 1, 2, 4, 8, 16 or 32
-        let sclk_div = core::cmp::min(32, (432_000_000 / sclk) & !1);
+        let _sclk_div = core::cmp::min(32, (432_000_000 / sclk) & !1);
 
-        unsafe { &*CRM::ptr() }.cfg.modify(|_, w| unsafe {
+        unsafe { &*CRM::ptr() }.cfg.modify(|_, w| {
             w.pllrcs().bit(use_hext);
             w.pllhextdiv().bit(hext_div2.unwrap_or(false))
         });
