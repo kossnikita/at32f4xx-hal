@@ -5,8 +5,8 @@ edition = "2021"
 
 [dependencies]
 at32f4xx-pac = { git = "https://github.com/kossnikita/at32f4xx-pac.git" }
-defmt = { version = "0.3", optional = true}
-cortex-m = { version = "0.7", features = ["critical-section-single-core"]}
+defmt = { version = "0.3", optional = true }
+cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
 nb = "1.1"
 embedded-hal = { features = ["unproven"], version = "0.2.7" }
@@ -20,7 +20,7 @@ fugit-timer = "0.1.3"
 panic-halt = "0.2"
 defmt = "0.3"
 defmt-rtt = "0.4"
-panic-probe = { version = "0.3", features = [ "print-defmt" ] }
+panic-probe = { version = "0.3", features = ["print-defmt"] }
 
 [features]
 at32a403a = ["at32f4xx-pac/at32a403a", "a403a-peripheral"]
@@ -38,26 +38,79 @@ at32f435 = ["at32f4xx-pac/at32f435", "f435-peripheral"]
 at32f437 = ["at32f4xx-pac/at32f437", "f437-peripheral"]
 at32wb415 = ["at32f4xx-pac/at32wb415", "wb415-peripheral"]
 
-a403a-peripheral = []
-f402-peripheral = []
-f403-peripheral = []
-f403a-peripheral = ["gpiod", "gpioe"]
-f405-peripheral = []
-f407-peripheral = ["gpiod", "gpioe"]
-f413-peripheral = []
-f415-peripheral = ["gpiod", "gpiof"]
-f421-peripheral = ["gpiof"]
-f423-peripheral = []
-f425-peripheral = []
-f435-peripheral = []
-f437-peripheral = []
-wb415-peripheral = []
+a403a-peripheral = ["legacy-gpio", "tmr1"]
+f402-peripheral = ["new-gpio", "tmr1"]
+f403-peripheral = ["legacy-gpio", "tmr1"]
+f403a-peripheral = [
+    "legacy-gpio",
+    "gpiod",
+    "gpioe",
+    "tmr1",
+    "tmr2",
+    "tmr3",
+    "tmr4",
+    "tmr5",
+    "tmr6",
+    "tmr7",
+    "tmr8",
+    "tmr9",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+    "tmr14",
+]
+f405-peripheral = ["new-gpio", "tmr1"]
+f407-peripheral = ["f403a-peripheral"]
+f413-peripheral = ["legacy-gpio", "tmr1"]
+f415-peripheral = [
+    "legacy-gpio",
+    "gpiod",
+    "gpiof",
+    "tmr1",
+    "tmr2",
+    "tmr3",
+    "tmr4",
+    "tmr5",
+    "tmr9",
+    "tmr10",
+    "tmr11",
+]
+f421-peripheral = ["new-gpio", "gpiof", "tmr1"]
+f423-peripheral = ["new-gpio", "tmr1"]
+f425-peripheral = ["new-gpio", "gpiof", "tmr1"]
+f435-peripheral = ["new-gpio", "tmr1"]
+f437-peripheral = ["new-gpio", "tmr1"]
+wb415-peripheral = ["legacy-gpio", "tmr1"]
+
+# Microcontroller has iomux perepheral and CFGLR/CFGHR registers
+new-gpio = []
+legacy-gpio = []
 
 gpiod = []
 gpioe = []
 gpiof = []
 gpiog = []
 gpioi = []
+
+tmr1 = []
+tmr2 = []
+tmr3 = []
+tmr4 = []
+tmr5 = []
+tmr6 = []
+tmr7 = []
+tmr8 = []
+tmr9 = []
+tmr10 = []
+tmr11 = []
+tmr12 = []
+tmr13 = []
+tmr14 = []
+tmr15 = []
+tmr16 = []
+tmr17 = []
+tmr20 = []
 
 [[example]]
 name = "blinky"

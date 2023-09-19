@@ -139,6 +139,7 @@ macro_rules! change_mode {
         }
     };
 }
+
 #[cfg(feature = "new-gpio")]
 macro_rules! change_mode {
     ($block:expr, $N:ident) => {
