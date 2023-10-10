@@ -2,7 +2,8 @@
 #![no_main]
 #![no_std]
 
-// Demonstrates the use of a rotary encoder.
+// Demonstrates the use of a rotary encoder. This example was tested
+// on AT-START-F415 board
 //
 // The rotary encoder A and B pins are connected to pins A0 and A1,
 // and they each have a 10K ohm pull-up resistor.
@@ -18,9 +19,6 @@ fn main() -> ! {
     let dp = pac::Peripherals::take().expect("Failed to get at32 peripherals");
     let cp = cortex_m::peripheral::Peripherals::take().expect("Failed to get cortex_m peripherals");
 
-    dp.IOMUX.enable_unchecked();
-    dp.IOMUX.remap4.modify(|_, w| w.tmr5_gmux().mux1());
-
     // Set up the system clock.
     let crm = dp.CRM.constrain();
     let clocks = crm.cfgr.freeze();
@@ -28,11 +26,11 @@ fn main() -> ! {
     // Create a delay abstraction based on SysTick.
     let mut delay = cp.SYST.delay(&clocks);
 
-    let gpiof = dp.GPIOF.split();
+    let gpioa = dp.GPIOA.split();
 
     // Connect a rotary encoder to pins A0 and A1.
-    let rotary_encoder_pins = (gpiof.pf4, gpiof.pf5);
-    let rotary_encoder_timer = dp.TMR5;
+    let rotary_encoder_pins = (gpioa.pa0, gpioa.pa1);
+    let rotary_encoder_timer = dp.TMR2;
     let rotary_encoder = Qei::new(rotary_encoder_timer, rotary_encoder_pins);
 
     let mut current_count = rotary_encoder.count();
