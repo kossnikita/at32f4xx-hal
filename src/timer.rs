@@ -309,7 +309,7 @@ macro_rules! hal {
             }
             #[inline(always)]
             unsafe fn set_auto_reload_unchecked(&mut self, pr: u32) {
-                self.pr.write(|w| w.bits(pr))
+                self.pr.write(|w| w.bits(pr.try_into().unwrap()))
             }
             #[inline(always)]
             fn set_auto_reload(&mut self, pr: u32) -> Result<(), Error> {
@@ -324,7 +324,7 @@ macro_rules! hal {
             #[inline(always)]
             fn read_auto_reload() -> u32 {
                 let tmr = unsafe { &*<$TMR>::ptr() };
-                tmr.pr.read().bits()
+                tmr.pr.read().bits().into()
             }
             #[inline(always)]
             fn enable_preload(&mut self, b: bool) {
@@ -347,12 +347,13 @@ macro_rules! hal {
                 self.cval.reset();
             }
             #[inline(always)]
+            #[allow(unused_unsafe)]
             fn set_prescaler(&mut self, div: u16) {
-                self.div.write(|w| unsafe {w.div().bits(div)} );
+                self.div.write(|w| unsafe {w.bits(div)} );
             }
             #[inline(always)]
             fn read_prescaler(&self) -> u16 {
-                self.div.read().div().bits()
+                self.div.read().bits()
             }
             #[inline(always)]
             fn trigger_update(&mut self) {
@@ -381,10 +382,9 @@ macro_rules! hal {
                 self.cval.read().bits() as Self::Width
             }
             #[inline(always)]
+            #[allow(unused_unsafe)]
             fn write_count(&mut self, value:Self::Width) {
-                //TODO: remove "unsafe" when possible
-                #[allow(unused_unsafe)]
-                self.cval.write(|w|unsafe{w.cval().bits(value)});
+                self.cval.write(|w|unsafe{w.bits(value)});
             }
             #[inline(always)]
             fn start_one_pulse(&mut self) {
@@ -424,10 +424,10 @@ macro_rules! hal {
                 }
 
                 #[inline(always)]
+                #[allow(unused_unsafe)]
                 fn set_cc_value(c: u8, value: u32) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        #[allow(unused_unsafe)]
                         tmr.cdt[c as usize].write(|w| unsafe { w.bits(value) })
                     }
                 }
@@ -532,6 +532,7 @@ macro_rules! with_pwm {
     ($TMR:ty: [$($Cx:ident, $ccmrx_output:ident, $cxoben:ident, $cxoctrl:ident;)+] $(, $aoe:ident)?) => {
         impl WithPwm for $TMR {
             #[inline(always)]
+            #[allow(unused_unsafe)]
             fn preload_output_channel_in_mode(&mut self, channel: Channel, mode: Ocm) {
                 match channel {
                     $(
@@ -734,3 +735,42 @@ hal!(pac::TMR4: [Timer4, u16, c: (4), m: tmr4,]);
 
 #[cfg(feature = "tmr5")]
 hal!(pac::TMR5: [Timer5, u32, c: (4), m: tmr5,]);
+
+#[cfg(feature = "tmr6")]
+hal!(pac::TMR6: [Timer6, u16, c: (4), m: tmr6,]);
+
+#[cfg(feature = "tmr7")]
+hal!(pac::TMR7: [Timer7, u16, c: (4), m: tmr7,]);
+
+#[cfg(feature = "tmr8")]
+hal!(pac::TMR8: [Timer8, u16, c: (4), m: tmr8,]);
+
+#[cfg(feature = "tmr9")]
+hal!(pac::TMR9: [Timer9, u16, c: (2),]);
+
+// #[cfg(feature = "tmr10")]
+// hal!(pac::TMR10: [Timer10, u16, c: (4), m: tmr10,]);
+
+// #[cfg(feature = "tmr11")]
+// hal!(pac::TMR11: [Timer11, u16, c: (4), m: tmr11,]);
+
+#[cfg(feature = "tmr12")]
+hal!(pac::TMR12: [Timer12, u16, c: (4), m: tmr12,]);
+
+#[cfg(feature = "tmr13")]
+hal!(pac::TMR13: [Timer13, u16, c: (4), m: tmr13,]);
+
+#[cfg(feature = "tmr14")]
+hal!(pac::TMR14: [Timer14, u16, c: (4), m: tmr14,]);
+
+#[cfg(feature = "tmr15")]
+hal!(pac::TMR15: [Timer15, u16, c: (4), m: tmr15,]);
+
+#[cfg(feature = "tmr16")]
+hal!(pac::TMR16: [Timer16, u16, c: (4), m: tmr16,]);
+
+#[cfg(feature = "tmr17")]
+hal!(pac::TMR17: [Timer17, u16, c: (4), m: tmr17,]);
+
+#[cfg(feature = "tmr20")]
+hal!(pac::TMR20: [Timer20, u16, c: (4), m: tmr20,]);

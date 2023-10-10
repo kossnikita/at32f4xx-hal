@@ -154,3 +154,172 @@ pub mod tmr2 {
         type Ext = Ext;
     }
 }
+
+#[cfg(feature = "tmr3")]
+pub mod tmr3 {
+    use super::*;
+
+    pin! {
+        <Ch1> default: PushPull for [
+            PA6<1>,
+
+            PB4<1>,
+
+            PC6<1>,
+        ],
+
+        <Ch2> default: PushPull for [
+            PA7<1>,
+
+            PB5<1>,
+
+            PC7<1>,
+        ],
+
+        <Ch3> default: PushPull for [
+            PB0<1>,
+
+            PC8<1>,
+        ],
+
+        <Ch4> default: PushPull for [
+            PB1<1>,
+
+            PC9<1>,
+        ],
+    }
+
+    pin! {
+        <Ext, PushPull> for [
+            PD2<1>,
+        ],
+    }
+
+    use crate::pac::TMR3 as TMR;
+
+    impl TmrCPin<0> for TMR {
+        type Ch<Otype> = Ch1<Otype>;
+    }
+    impl TmrCPin<1> for TMR {
+        type Ch<Otype> = Ch2<Otype>;
+    }
+    impl TmrCPin<2> for TMR {
+        type Ch<Otype> = Ch3<Otype>;
+    }
+    impl TmrCPin<3> for TMR {
+        type Ch<Otype> = Ch4<Otype>;
+    }
+    impl TmrExt for TMR {
+        type Ext = Ext;
+    }
+}
+
+#[cfg(feature = "tmr4")]
+pub mod tmr4 {
+    use super::*;
+
+    pin! {
+        <Ch1> default: PushPull for [
+            PB6<1>,
+        ],
+
+        <Ch2> default: PushPull for [
+            PB7<1>,
+        ],
+
+        <Ch3> default: PushPull for [
+            PB8<1>,
+        ],
+
+        <Ch4> default: PushPull for [
+            PB9<1>,
+        ],
+    }
+
+    use crate::pac::TMR4 as TMR;
+
+    impl TmrCPin<0> for TMR {
+        type Ch<Otype> = Ch1<Otype>;
+    }
+    impl TmrCPin<1> for TMR {
+        type Ch<Otype> = Ch2<Otype>;
+    }
+    impl TmrCPin<2> for TMR {
+        type Ch<Otype> = Ch3<Otype>;
+    }
+    impl TmrCPin<3> for TMR {
+        type Ch<Otype> = Ch4<Otype>;
+    }
+}
+
+#[cfg(feature = "tmr5")]
+pub mod tmr5 {
+    use super::*;
+
+    pin! {
+        <Ch1> default: PushPull for [
+            PA0<1>,
+
+            PF4<1>,
+        ],
+
+        <Ch2> default: PushPull for [
+            PA1<1>,
+
+            PF5<1>,
+        ],
+
+        <Ch3> default: PushPull for [
+            PA2<1>,
+        ],
+
+        <Ch4> default: PushPull for [
+            PA3<1>,
+
+        ],
+    }
+
+    use crate::pac::TMR5 as TMR;
+
+    impl TmrCPin<0> for TMR {
+        type Ch<Otype> = Ch1<Otype>;
+    }
+    impl TmrCPin<1> for TMR {
+        type Ch<Otype> = Ch2<Otype>;
+    }
+    impl TmrCPin<2> for TMR {
+        type Ch<Otype> = Ch3<Otype>;
+    }
+    impl TmrCPin<3> for TMR {
+        type Ch<Otype> = Ch4<Otype>;
+    }
+}
+
+#[cfg(feature = "tmr9")]
+pub mod tmr9 {
+    use super::*;
+
+    pin! {
+        <Ch1> default: PushPull for [
+            PA2<1>,
+
+            PB14<1>,
+        ],
+
+        <Ch2> default: PushPull for [
+            PA3<1>,
+
+            PB15<1>,
+        ],
+
+    }
+
+    use crate::pac::TMR9 as TMR;
+
+    impl TmrCPin<0> for TMR {
+        type Ch<Otype> = Ch1<Otype>;
+    }
+    impl TmrCPin<1> for TMR {
+        type Ch<Otype> = Ch2<Otype>;
+    }
+}

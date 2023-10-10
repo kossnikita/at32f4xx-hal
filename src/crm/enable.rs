@@ -66,6 +66,11 @@ bus! {
     GPIOC => (APB2, 4),
 }
 
+#[cfg(feature = "iomux")]
+bus! {
+    IOMUX => (APB2, 0),
+}
+
 #[cfg(feature = "gpiod")]
 bus! {
     GPIOD => (APB2, 5),

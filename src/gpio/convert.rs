@@ -417,3 +417,9 @@ impl<const A: u8> PinMode for Alternate<A, PushPull> {
     const IOMC: u32 = 0b10;
     const OM: u32 = 0b0;
 }
+
+#[cfg(feature = "legacy-gpio")]
+impl<const A: u8> PinMode for Alternate<A, Input> {
+    const IOMC: u32 = 0b00;
+    const IOFC: u32 = 0b01;
+}

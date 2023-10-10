@@ -38,9 +38,33 @@ at32f435 = ["at32f4xx-pac/at32f435", "f435-peripheral"]
 at32f437 = ["at32f4xx-pac/at32f437", "f437-peripheral"]
 at32wb415 = ["at32f4xx-pac/at32wb415", "wb415-peripheral"]
 
-a403a-peripheral = ["legacy-gpio", "tmr1"]
-f402-peripheral = ["new-gpio", "tmr1"]
-f403-peripheral = ["legacy-gpio", "tmr1"]
+a403a-peripheral = [
+    "legacy-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+f402-peripheral = [
+    "new-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+f403-peripheral = [
+    "legacy-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
 f403a-peripheral = [
     "legacy-gpio",
     "gpiod",
@@ -60,9 +84,17 @@ f403a-peripheral = [
     "tmr13",
     "tmr14",
 ]
-f405-peripheral = ["new-gpio", "tmr1"]
-f407-peripheral = ["f403a-peripheral"]
-f413-peripheral = ["legacy-gpio", "tmr1"]
+f405-peripheral = ["new-gpio", "tmr1", "tmr2", "tmr10", "tmr11", "tmr13"]
+f407-peripheral = [
+    "f403a-peripheral",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+f413-peripheral = ["legacy-gpio", "tmr1", "tmr2", "tmr10", "tmr11"]
 f415-peripheral = [
     "legacy-gpio",
     "gpiod",
@@ -77,15 +109,41 @@ f415-peripheral = [
     "tmr11",
 ]
 f421-peripheral = ["new-gpio", "gpiof", "tmr1"]
-f423-peripheral = ["new-gpio", "tmr1"]
-f425-peripheral = ["new-gpio", "gpiof", "tmr1"]
-f435-peripheral = ["new-gpio", "tmr1"]
-f437-peripheral = ["new-gpio", "tmr1"]
-wb415-peripheral = ["legacy-gpio", "tmr1"]
+f423-peripheral = [
+    "new-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+f425-peripheral = ["new-gpio", "gpiof", "tmr1", "tmr2"]
+f435-peripheral = [
+    "new-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+f437-peripheral = [
+    "new-gpio",
+    "tmr1",
+    "tmr2",
+    "tmr10",
+    "tmr11",
+    "tmr12",
+    "tmr13",
+]
+wb415-peripheral = ["legacy-gpio", "tmr1", "tmr2", "tmr10", "tmr11"]
 
 # Microcontroller has iomux perepheral and CFGLR/CFGHR registers
 new-gpio = []
-legacy-gpio = []
+legacy-gpio = ["iomux"]
+
+iomux = []
 
 gpiod = []
 gpioe = []
@@ -117,6 +175,9 @@ name = "blinky"
 
 [[example]]
 name = "pwm"
+
+[[example]]
+name = "qei"
 
 [[example]]
 name = "timer-periph"
