@@ -358,18 +358,18 @@ where
                 0..=7 => unsafe {
                     (*Gpio::<P>::ptr())
                         .cfglr
-                        .modify(|r, w| w.bits(r.bits() | (0b1 << (offset + 3))))
+                        .modify(|r, w| w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2))))
                 },
                 8..=15 => unsafe {
                     (*Gpio::<P>::ptr())
                         .cfghr
-                        .modify(|r, w| w.bits(r.bits() | (0b1 << (offset + 3))))
+                        .modify(|r, w| w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2))))
                 },
                 _ => unreachable!(),
             }
             unsafe {
                 (*Gpio::<P>::ptr())
-                    .cfghr
+                    .odt
                     .modify(|r, w| w.bits(r.bits() & !(0b1 << N) | (value << N)))
             }
         }
