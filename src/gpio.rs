@@ -55,6 +55,7 @@
 //! change the mode
 
 use core::marker::PhantomData;
+use core::convert::Infallible;
 
 pub mod alt;
 mod convert;
@@ -66,7 +67,7 @@ pub use erased::{EPin, ErasedPin};
 mod dynamic;
 pub use dynamic::{Dynamic, DynamicPin};
 
-pub use embedded_hal::digital::v2::PinState;
+pub use embedded_hal::digital::v2::*;
 
 use core::fmt;
 
@@ -523,6 +524,63 @@ where
         self._is_low()
     }
 }
+
+impl<const P: char, const N: u8, MODE> OutputPin for Pin<P, N, Output<MODE>> {
+    type Error = Infallible;
+
+    #[inline(always)]
+    fn set_high(&mut self) -> Result<(), Self::Error> {
+        self.set_high();
+        Ok(())
+    }
+
+    #[inline(always)]
+    fn set_low(&mut self) -> Result<(), Self::Error> {
+        self.set_low();
+        Ok(())
+    }
+}
+
+impl<const P: char, const N: u8, MODE> StatefulOutputPin for Pin<P, N, Output<MODE>> {
+    #[inline(always)]
+    fn is_set_high(&self) -> Result<bool, Self::Error> {
+        Ok(self.is_set_high())
+    }
+
+    #[inline(always)]
+    fn is_set_low(&self) -> Result<bool, Self::Error> {
+        Ok(self.is_set_low())
+    }
+}
+
+impl<const P: char, const N: u8, MODE> ToggleableOutputPin for Pin<P, N, Output<MODE>> {
+    type Error = Infallible;
+
+    #[inline(always)]
+    fn toggle(&mut self) -> Result<(), Self::Error> {
+        self.toggle();
+        Ok(())
+    }
+}
+
+impl<const P: char, const N: u8, MODE> InputPin for Pin<P, N, MODE>
+where
+    MODE: marker::Readable,
+{
+    type Error = Infallible;
+
+    #[inline(always)]
+    fn is_high(&self) -> Result<bool, Self::Error> {
+        Ok(self.is_high())
+    }
+
+    #[inline(always)]
+    fn is_low(&self) -> Result<bool, Self::Error> {
+        Ok(self.is_low())
+    }
+}
+
+
 
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $PEPin:ident, $port_id:expr, $PXn:ident, [
