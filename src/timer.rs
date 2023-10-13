@@ -17,6 +17,9 @@ pub use delay::*;
 pub mod pwm;
 pub use pwm::*;
 
+pub mod hal;
+pub use hal::*;
+
 /// Timer wrapper.
 ///
 /// This wrapper can be used both for the system timer (SYST) or the

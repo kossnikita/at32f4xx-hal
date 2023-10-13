@@ -1,7 +1,7 @@
 //! # Quadrature Encoder Interface
 use crate::{
     crm,
-    gpio::{PushPull, Input},
+    gpio::Input,
     pac,
     timer::{CPin, General},
 };
