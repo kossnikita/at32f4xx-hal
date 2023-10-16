@@ -70,7 +70,7 @@ impl FlashExt for FLASH {
         match self.len() / 1024 {
             // 1 MB devices depend on configuration
             1024 => {
-                cfg!(any(feature = "at32f403", feature = "at32f407",)) 
+                cfg!(any(feature = "at32f403", feature = "at32f407",))
             }
             // 2 MB devices are always dual bank
             2048 => true,

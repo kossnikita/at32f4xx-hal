@@ -54,8 +54,8 @@
 //! To make a pin dynamic, use the `into_dynamic` function, and then use the `make_<mode>` functions to
 //! change the mode
 
-use core::marker::PhantomData;
 use core::convert::Infallible;
+use core::marker::PhantomData;
 
 pub mod alt;
 mod convert;
@@ -357,14 +357,14 @@ where
         } else {
             match N {
                 0..=7 => unsafe {
-                    (*Gpio::<P>::ptr())
-                        .cfglr
-                        .modify(|r, w| w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2))))
+                    (*Gpio::<P>::ptr()).cfglr.modify(|r, w| {
+                        w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2)))
+                    })
                 },
                 8..=15 => unsafe {
-                    (*Gpio::<P>::ptr())
-                        .cfghr
-                        .modify(|r, w| w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2))))
+                    (*Gpio::<P>::ptr()).cfghr.modify(|r, w| {
+                        w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2)))
+                    })
                 },
                 _ => unreachable!(),
             }
@@ -579,8 +579,6 @@ where
         Ok(self.is_low())
     }
 }
-
-
 
 macro_rules! gpio {
     ($GPIOX:ident, $gpiox:ident, $PEPin:ident, $port_id:expr, $PXn:ident, [

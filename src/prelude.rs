@@ -63,8 +63,8 @@ pub use crate::gpio::GpioExt as _at32f4xx_hal_gpio_GpioExt;
 // pub use crate::i2c::dma::I2CMasterWriteReadDMA as _at32f4xx_hal_i2c_dma_I2CMasterWriteReadDMA;
 // pub use crate::i2c::I2cExt as _at32f4xx_hal_i2c_I2cExt;
 // pub use crate::i2s::I2sExt as _at32f4xx_hal_i2s_I2sExt;
-pub use crate::qei::QeiExt as _at32f4xx_hal_QeiExt;
 pub use crate::crm::CrmExt as _at32f4xx_hal_crm_CrmExt;
+pub use crate::qei::QeiExt as _at32f4xx_hal_QeiExt;
 // #[cfg(all(feature = "device-selected", feature = "rng"))]
 // pub use crate::rng::RngExt as _at32f4xx_hal_rng_RngExt;
 // pub use crate::serial::Listen as _at32f4xx_hal_serial_Listen;

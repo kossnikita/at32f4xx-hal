@@ -1,6 +1,6 @@
 //! Delay implementation based on general-purpose 32 bit timers and System timer (SysTick).
 //!
-//! TIM2 and TIM5 are a general purpose 32-bit auto-reload up/downcounter with
+//! TMR2 and TMR5 are a general purpose 32-bit auto-reload up/downcounter with
 //! a 16-bit prescaler.
 
 use embedded_hal::{

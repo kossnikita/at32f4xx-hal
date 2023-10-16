@@ -292,7 +292,7 @@ pub trait Instance:
 {
 }
 
-macro_rules! hal {
+macro_rules! tmr {
     ($TMR:ty: [
         $Timer:ident,
         $bits:ty,
@@ -318,8 +318,8 @@ macro_rules! hal {
             fn set_auto_reload(&mut self, pr: u32) -> Result<(), Error> {
                 // Note: Make it impossible to set the ARR value to 0, since this
                 // would cause an infinite loop.
-                if pr > 0 && pr <= Self::max_auto_reload() {
-                    Ok(unsafe { self.set_auto_reload_unchecked(pr) })
+                if pr > 0 && pr <= Self::max_auto_reload().try_into().unwrap() {
+                    Ok(unsafe { self.set_auto_reload_unchecked(pr.try_into().unwrap()) })
                 } else {
                     Err(Error::WrongAutoReload)
                 }
@@ -420,7 +420,7 @@ macro_rules! hal {
                 fn read_cc_value(c: u8) -> u32 {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        tmr.cdt[c as usize].read().bits()
+                        tmr.cdt[c as usize].read().bits().try_into().unwrap()
                     } else {
                         0
                     }
@@ -431,7 +431,7 @@ macro_rules! hal {
                 fn set_cc_value(c: u8, value: u32) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        tmr.cdt[c as usize].write(|w| unsafe { w.bits(value) })
+                        tmr.cdt[c as usize].write(|w| unsafe { w.bits(value.try_into().unwrap()) })
                     }
                 }
 
@@ -516,20 +516,20 @@ macro_rules! hal {
 
     };
 }
-use hal;
+use tmr;
 
-macro_rules! with_dmar {
-    ($TMR:ty, $memsize:ty) => {
-        unsafe impl PeriAddress for DMAR<$TMR> {
-            #[inline(always)]
-            fn address(&self) -> u32 {
-                &self.0.dmar as *const _ as u32
-            }
+// macro_rules! with_dmar {
+//     ($TMR:ty, $memsize:ty) => {
+//         unsafe impl PeriAddress for DMAR<$TMR> {
+//             #[inline(always)]
+//             fn address(&self) -> u32 {
+//                 &self.0.dmar as *const _ as u32
+//             }
 
-            type MemSize = $memsize;
-        }
-    };
-}
+//             type MemSize = $memsize;
+//         }
+//     };
+// }
 
 macro_rules! with_pwm {
     ($TMR:ty: [$($Cx:ident, $ccmrx_output:ident, $cxoben:ident, $cxoctrl:ident;)+] $(, $aoe:ident)?) => {
@@ -725,55 +725,55 @@ pub(crate) const fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u32) {
 }
 
 #[cfg(feature = "tmr1")]
-hal!(pac::TMR1: [Timer1, u16, c: (4), m: tmr1,]);
+tmr!(pac::TMR1: [Timer1, u16, c: (4), m: tmr1,]);
 
 #[cfg(feature = "tmr2")]
-hal!(pac::TMR2: [Timer2, u32, c: (4), m: tmr2,]);
+tmr!(pac::TMR2: [Timer2, u32, c: (4), m: tmr2,]);
 
 #[cfg(feature = "tmr3")]
-hal!(pac::TMR3: [Timer3, u16, c: (4), m: tmr3,]);
+tmr!(pac::TMR3: [Timer3, u16, c: (4), m: tmr3,]);
 
 #[cfg(feature = "tmr4")]
-hal!(pac::TMR4: [Timer4, u16, c: (4), m: tmr4,]);
+tmr!(pac::TMR4: [Timer4, u16, c: (4), m: tmr4,]);
 
 #[cfg(feature = "tmr5")]
-hal!(pac::TMR5: [Timer5, u32, c: (4), m: tmr5,]);
+tmr!(pac::TMR5: [Timer5, u32, c: (4), m: tmr5,]);
 
 #[cfg(feature = "tmr6")]
-hal!(pac::TMR6: [Timer6, u16, c: (4), m: tmr6,]);
+tmr!(pac::TMR6: [Timer6, u16, c: (4), m: tmr6,]);
 
 #[cfg(feature = "tmr7")]
-hal!(pac::TMR7: [Timer7, u16, c: (4), m: tmr7,]);
+tmr!(pac::TMR7: [Timer7, u16, c: (4), m: tmr7,]);
 
 #[cfg(feature = "tmr8")]
-hal!(pac::TMR8: [Timer8, u16, c: (4), m: tmr8,]);
+tmr!(pac::TMR8: [Timer8, u16, c: (4), m: tmr8,]);
 
 #[cfg(feature = "tmr9")]
-hal!(pac::TMR9: [Timer9, u16, c: (2),]);
+tmr!(pac::TMR9: [Timer9, u16, c: (2),]);
 
 // #[cfg(feature = "tmr10")]
-// hal!(pac::TMR10: [Timer10, u16, c: (4), m: tmr10,]);
+// tmr!(pac::TMR10: [Timer10, u16, c: (4), m: tmr10,]);
 
 // #[cfg(feature = "tmr11")]
-// hal!(pac::TMR11: [Timer11, u16, c: (4), m: tmr11,]);
+// tmr!(pac::TMR11: [Timer11, u16, c: (4), m: tmr11,]);
 
 #[cfg(feature = "tmr12")]
-hal!(pac::TMR12: [Timer12, u16, c: (4), m: tmr12,]);
+tmr!(pac::TMR12: [Timer12, u16, c: (4),]);
 
 #[cfg(feature = "tmr13")]
-hal!(pac::TMR13: [Timer13, u16, c: (4), m: tmr13,]);
+tmr!(pac::TMR13: [Timer13, u16, c: (4), m:]);
 
 #[cfg(feature = "tmr14")]
-hal!(pac::TMR14: [Timer14, u16, c: (4), m: tmr14,]);
+tmr!(pac::TMR14: [Timer14, u16, c: (4),]);
 
 #[cfg(feature = "tmr15")]
-hal!(pac::TMR15: [Timer15, u16, c: (4), m: tmr15,]);
+tmr!(pac::TMR15: [Timer15, u16, c: (4), m: tmr15,]);
 
 #[cfg(feature = "tmr16")]
-hal!(pac::TMR16: [Timer16, u16, c: (4), m: tmr16,]);
+tmr!(pac::TMR16: [Timer16, u16, c: (4), m: tmr16,]);
 
 #[cfg(feature = "tmr17")]
-hal!(pac::TMR17: [Timer17, u16, c: (4), m: tmr17,]);
+tmr!(pac::TMR17: [Timer17, u16, c: (4), m: tmr17,]);
 
 #[cfg(feature = "tmr20")]
-hal!(pac::TMR20: [Timer20, u16, c: (4), m: tmr20,]);
+tmr!(pac::TMR20: [Timer20, u16, c: (4), m: tmr20,]);
