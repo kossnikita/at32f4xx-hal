@@ -268,8 +268,8 @@ mod sealed {
 
     pub trait Advanced: WithPwmCommon {
         fn enable_nchannel(channel: u8, b: bool);
-        fn set_dtg_value(value: u8);
-        fn read_dtg_value() -> u8;
+        fn set_dtc_value(value: u8);
+        fn read_dtc_value() -> u8;
         fn idle_state(channel: u8, comp: bool, s: IdleState);
         fn enable_output(&mut self);
         fn disable_output(&mut self);
@@ -469,23 +469,23 @@ macro_rules! tmr {
                             unsafe { bb::write(&tmr.cctrl, c*4 + 2, b); }
                         }
                     }
-                    fn set_dtg_value(value: u8) {
+                    fn set_dtc_value(value: u8) {
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.bdtr.modify(|_,w| unsafe { w.dtg().bits(value) });
+                        tmr.brk.modify(|_,w| w.dtc().bits(value));
                     }
-                    fn read_dtg_value() -> u8 {
+                    fn read_dtc_value() -> u8 {
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.bdtr.read().dtg().bits()
+                        tmr.brk.read().dtc().bits()
                     }
                     fn idle_state(c: u8, comp: bool, s: IdleState) {
                         let tmr = unsafe { &*<$TMR>::ptr() };
                         if !comp {
                             if c < Self::CH_NUMBER {
-                                unsafe { bb::write(&tmr.cr2, c*2 + 8, s == IdleState::Set); }
+                                unsafe { bb::write(&tmr.ctrl2, c*2 + 8, s == IdleState::Set); }
                             }
                         } else {
                             if c < Self::COMP_CH_NUMBER {
-                                unsafe { bb::write(&tmr.cr2, c*2 + 9, s == IdleState::Set); }
+                                unsafe { bb::write(&tmr.ctrl2, c*2 + 9, s == IdleState::Set); }
                             }
                         }
                     }
@@ -551,7 +551,7 @@ macro_rules! with_pwm {
 
             #[inline(always)]
             fn start_pwm(&mut self) {
-                $(let $aoe = self.bdtr.modify(|_, w| w.aoe().set_bit());)?
+                $(let $aoe = self.brk.modify(|_, w| w.aoen().set_bit());)?
                 self.ctrl1.modify(|_, w| w.tmren().set_bit());
             }
         }
@@ -725,7 +725,7 @@ pub(crate) const fn compute_arr_presc(freq: u32, clock: u32) -> (u16, u32) {
 }
 
 #[cfg(feature = "tmr1")]
-tmr!(pac::TMR1: [Timer1, u16, c: (4), m: tmr1,]);
+tmr!(pac::TMR1: [Timer1, u16, c: (4, _aoe), m: tmr1,]);
 
 #[cfg(feature = "tmr2")]
 tmr!(pac::TMR2: [Timer2, u32, c: (4), m: tmr2,]);

@@ -497,7 +497,7 @@ where
     #[inline]
     pub fn set_dead_time(&mut self, dts_ticks: u16) {
         let bits = pack_ceil_dead_time(dts_ticks);
-        TMR::set_dtg_value(bits);
+        TMR::set_dtc_value(bits);
     }
 
     /// Set raw dead time (DTG) bits
@@ -506,19 +506,19 @@ where
     /// the actual resulting dead time is described in the application note RM0368 from ST Microelectronics
     #[inline]
     pub fn set_dead_time_bits(&mut self, bits: u8) {
-        TMR::set_dtg_value(bits);
+        TMR::set_dtc_value(bits);
     }
 
     /// Return dead time for complementary pins in the unit of DTS ticks
     #[inline]
     pub fn get_dead_time(&self) -> u16 {
-        unpack_dead_time(TMR::read_dtg_value())
+        unpack_dead_time(TMR::read_dtc_value())
     }
 
     /// Get raw dead time (DTG) bits
     #[inline]
     pub fn get_dead_time_bits(&self) -> u8 {
-        TMR::read_dtg_value()
+        TMR::read_dtc_value()
     }
 
     /// Set the pin idle state
