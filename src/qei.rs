@@ -78,11 +78,11 @@ impl<TMR: Instance> Qei<TMR> {
         self
     }
 
-    fn count(&self) -> TMR::Width {
+    pub fn count(&self) -> TMR::Width {
         self.tmr.read_count()
     }
 
-    fn direction(&self) -> Direction {
+    pub fn direction(&self) -> Direction {
         if self.tmr.read_direction() {
             Direction::Upcounting
         } else {
