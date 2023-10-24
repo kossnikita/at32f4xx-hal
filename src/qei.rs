@@ -6,6 +6,13 @@ use crate::{
     timer::{CPin, General},
 };
 
+pub enum Direction {
+    /// 3, 2, 1
+    Downcounting,
+    /// 1, 2, 3
+    Upcounting,
+}
+
 pub trait QeiExt: Sized + Instance {
     fn qei(
         self,
@@ -70,20 +77,16 @@ impl<TMR: Instance> Qei<TMR> {
         self.tmr.write_count(value);
         self
     }
-}
 
-impl<TMR: Instance> embedded_hal::Qei for Qei<TMR> {
-    type Count = TMR::Width;
-
-    fn count(&self) -> Self::Count {
+    fn count(&self) -> TMR::Width {
         self.tmr.read_count()
     }
 
-    fn direction(&self) -> embedded_hal::Direction {
+    fn direction(&self) -> Direction {
         if self.tmr.read_direction() {
-            embedded_hal::Direction::Upcounting
+            Direction::Upcounting
         } else {
-            embedded_hal::Direction::Downcounting
+            Direction::Downcounting
         }
     }
 }
@@ -101,21 +104,22 @@ macro_rules! hal {
             fn setup_qei(&mut self) {
                 self.cm1_input().write(|w| unsafe {
                     w.c1df()
-                        .bits(1)
+                        .bits(3)
                         .c2df()
-                        .bits(1)
+                        .bits(3)
                         .c1c()
                         .c1ifp1()
                         .c2c()
                         .c2ifp2()
                 });
-                self.cctrl.write(|w| unsafe {
-                    w.c1p().high().c2p().high().c1en().enable().c2en().enable()
-                });
+                self.cctrl
+                    .write(|w| w.c1p().high().c2p().high().c1en().enable().c2en().enable());
                 // enable and configure to capture on rising edge
                 self.stctrl.modify(|_, w| w.smsel().encoder_a());
                 self.set_auto_reload(<$TMR as General>::Width::MAX as u32)
                     .unwrap();
+                self.set_prescaler(2);
+                self.ctrl1.modify(|_, w| w.prben().enable());
                 self.enable_counter();
             }
 

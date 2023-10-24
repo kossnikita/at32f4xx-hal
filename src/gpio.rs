@@ -67,7 +67,7 @@ pub use erased::{EPin, ErasedPin};
 mod dynamic;
 pub use dynamic::{Dynamic, DynamicPin};
 
-pub use embedded_hal::digital::v2::*;
+pub use embedded_hal::digital::*;
 
 use core::fmt;
 
@@ -518,7 +518,7 @@ impl<const P: char, const N: u8, MODE> Pin<P, N, Output<MODE>> {
     /// Toggle pin output
     #[inline(always)]
     pub fn toggle(&mut self) {
-        if self.is_set_low() {
+        if self.is_set_low().unwrap() {
             self.set_high()
         } else {
             self.set_low()
@@ -562,8 +562,6 @@ where
 }
 
 impl<const P: char, const N: u8, MODE> OutputPin for Pin<P, N, Output<MODE>> {
-    type Error = Infallible;
-
     #[inline(always)]
     fn set_high(&mut self) -> Result<(), Self::Error> {
         self.set_high();
@@ -590,8 +588,6 @@ impl<const P: char, const N: u8, MODE> StatefulOutputPin for Pin<P, N, Output<MO
 }
 
 impl<const P: char, const N: u8, MODE> ToggleableOutputPin for Pin<P, N, Output<MODE>> {
-    type Error = Infallible;
-
     #[inline(always)]
     fn toggle(&mut self) -> Result<(), Self::Error> {
         self.toggle();
@@ -599,12 +595,14 @@ impl<const P: char, const N: u8, MODE> ToggleableOutputPin for Pin<P, N, Output<
     }
 }
 
+impl<const P: char, const N: u8, MODE> ErrorType for Pin<P, N, MODE> {
+    type Error = Infallible;
+}
+
 impl<const P: char, const N: u8, MODE> InputPin for Pin<P, N, MODE>
 where
     MODE: marker::Readable,
 {
-    type Error = Infallible;
-
     #[inline(always)]
     fn is_high(&self) -> Result<bool, Self::Error> {
         Ok(self.is_high())

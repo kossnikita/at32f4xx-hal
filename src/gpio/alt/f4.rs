@@ -1,6 +1,18 @@
 use super::*;
 use crate::gpio::{self, PushPull};
 
+use core::marker::PhantomData;
+
+/// A filler pin type
+#[derive(Debug, Default)]
+#[cfg_attr(feature = "defmt", derive(defmt::Format))]
+pub struct NoPin<Otype = PushPull>(PhantomData<Otype>);
+impl<Otype> NoPin<Otype> {
+    pub fn new() -> Self {
+        Self(PhantomData)
+    }
+}
+
 #[cfg(feature = "tmr1")]
 pub mod tmr1 {
     use super::*;
@@ -321,5 +333,98 @@ pub mod tmr9 {
     }
     impl TmrCPin<1> for TMR {
         type Ch<Otype> = Ch2<Otype>;
+    }
+}
+
+pub mod usart1 {
+    use super::*;
+
+    pin! {
+        <Ck, PushPull> for [
+            PA8<7>,
+        ],
+
+        <Cts, PushPull> for [
+            PA11<7>,
+        ],
+
+        <Rts, PushPull> for [
+            PA12<7>,
+        ],
+    }
+
+    pin! {
+        <Rx> default: PushPull for no:NoPin, [
+            PA10<7>,
+
+            PB7<7>,
+        ],
+
+        <Tx> default: PushPull for no:NoPin, [
+            PA9<7>,
+
+            PB6<7>,
+        ],
+    }
+
+    use crate::pac::USART1 as USART;
+    impl SerialAsync for USART {
+        type Rx<Otype> = Rx<Otype>;
+        type Tx<Otype> = Tx<Otype>;
+    }
+    impl SerialSync for USART {
+        type Ck = Ck;
+    }
+    impl SerialRs232 for USART {
+        type Cts = Cts;
+        type Rts = Rts;
+    }
+}
+
+pub mod usart2 {
+    use super::*;
+
+    pin! {
+        <Ck, PushPull> for [
+            PA4<7>,
+
+        ],
+
+        <Cts, PushPull> for [
+            PA0<7>,
+
+            #[cfg(not(feature = "gpio-f410"))]
+            PD3<7>,
+        ],
+
+        <Rts, PushPull> for [
+            PA1<7>,
+
+        ],
+    }
+
+    pin! {
+        <Rx> default: PushPull for no:NoPin, [
+            PA3<7>,
+
+        ],
+
+        <Tx> default: PushPull for no:NoPin, [
+            PA2<7>,
+
+        ],
+    }
+
+    use crate::pac::USART2 as USART;
+    impl SerialAsync for USART {
+        type Rx<Otype> = Rx<Otype>;
+        type Tx<Otype> = Tx<Otype>;
+    }
+    impl SerialSync for USART {
+        type Ck = Ck;
+    }
+    impl SerialRs232 for USART {
+        type Cts = Cts;
+        type Rts = Rts;
     }
 }

@@ -104,8 +104,11 @@ pub mod flash;
 pub mod gpio;
 pub mod prelude;
 pub mod qei;
+pub mod serial;
 pub mod signature;
+pub mod time;
 pub mod timer;
+pub mod uart;
 
 #[cfg(feature = "iomux")]
 pub mod iomux;

@@ -9,8 +9,9 @@ defmt = { version = "0.3", optional = true }
 cortex-m = { version = "0.7", features = ["critical-section-single-core"] }
 cortex-m-rt = "0.7"
 nb = "1.1"
-embedded-hal = { features = ["unproven"], version = "0.2.7" }
+embedded-hal = { features = ["defmt-03"], version = "1.0.0-rc.1" }
 embedded-hal-nb = "1.0.0-rc.1"
+embedded-io = "0.6"
 fugit = "0.3.7"
 embedded-storage = "0.3"
 bitflags = "2.4.0"
@@ -171,6 +172,12 @@ tmr16 = []
 tmr17 = []
 tmr20 = []
 
+usart1 = []
+uart4 = []
+uart5 = []
+uart6 = []
+uart7 = []
+
 [[example]]
 name = "blinky"
 
@@ -179,6 +186,9 @@ name = "pwm"
 
 [[example]]
 name = "qei"
+
+[[example]]
+name = "serial"
 
 [[example]]
 name = "timer-periph"

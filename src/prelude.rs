@@ -37,14 +37,9 @@
 //! use at32f4xx_hal::prelude::*;
 //! ```
 // pub use embedded_hal::adc::OneShot as _embedded_hal_adc_OneShot;
-pub use embedded_hal::blocking::delay::DelayMs as _embedded_hal_blocking_delay_DelayMs;
-pub use embedded_hal::blocking::delay::DelayUs as _embedded_hal_blocking_delay_DelayUs;
-pub use embedded_hal::blocking::serial::Write as _embedded_hal_blocking_serial_Write;
-pub use embedded_hal::serial::Read as _embedded_hal_serial_Read;
-pub use embedded_hal::serial::Write as _embedded_hal_serial_Write;
-pub use embedded_hal::Capture as _embedded_hal_Capture;
-pub use embedded_hal::Pwm as _embedded_hal_Pwm;
-pub use embedded_hal::Qei as _embedded_hal_Qei;
+pub use embedded_hal::delay::DelayUs as _embedded_hal_delay_DelayUs;
+pub use embedded_io::Read as _embedded_io_Read;
+pub use embedded_io::Write as _embedded_io_Write;
 pub use fugit::ExtU32 as _fugit_ExtU32;
 pub use fugit::RateExtU32 as _fugit_RateExtU32;
 
@@ -67,12 +62,12 @@ pub use crate::crm::CrmExt as _at32f4xx_hal_crm_CrmExt;
 pub use crate::qei::QeiExt as _at32f4xx_hal_QeiExt;
 // #[cfg(all(feature = "device-selected", feature = "rng"))]
 // pub use crate::rng::RngExt as _at32f4xx_hal_rng_RngExt;
-// pub use crate::serial::Listen as _at32f4xx_hal_serial_Listen;
-// pub use crate::serial::RxISR as _at32f4xx_hal_serial_RxISR;
-// pub use crate::serial::RxListen as _at32f4xx_hal_serial_RxListen;
-// pub use crate::serial::SerialExt as _at32f4xx_hal_serial_SerialExt;
-// pub use crate::serial::TxISR as _at32f4xx_hal_serial_TxISR;
-// pub use crate::serial::TxListen as _at32f4xx_hal_serial_TxListen;
+pub use crate::serial::Listen as _at32f4xx_hal_serial_Listen;
+pub use crate::serial::RxISR as _at32f4xx_hal_serial_RxISR;
+pub use crate::serial::RxListen as _at32f4xx_hal_serial_RxListen;
+pub use crate::serial::SerialExt as _at32f4xx_hal_serial_SerialExt;
+pub use crate::serial::TxISR as _at32f4xx_hal_serial_TxISR;
+pub use crate::serial::TxListen as _at32f4xx_hal_serial_TxListen;
 // pub use crate::spi::SpiExt as _at32f4xx_hal_spi_SpiExt;
 // pub use crate::syscfg::SysCfgExt as _at32f4xx_hal_syscfg_SysCfgExt;
 // pub use crate::time::U32Ext as _at32f4xx_hal_time_U32Ext;
