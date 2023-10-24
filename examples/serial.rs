@@ -1,14 +1,13 @@
 #![no_main]
 #![no_std]
 
-use panic_halt as _;
+use defmt_rtt as _;
+use panic_probe as _;
 
 use at32f4xx_hal as hal;
 use cortex_m_rt::entry;
 
 use crate::hal::{pac, prelude::*};
-
-use core::fmt::Write; // for pretty formatting of the serial output
 
 #[entry]
 fn main() -> ! {
@@ -30,14 +29,15 @@ fn main() -> ! {
     // configure serial
     // let mut tx = Serial::tx(dp.USART1, tx_pin, 9600.bps(), &clocks).unwrap();
     // or
-    let mut tx = dp.USART1.tx(tx_pin, 9600.bps(), &clocks).unwrap();
+    let mut tx: hal::uart::Tx<pac::USART1> = dp.USART1.tx(tx_pin, 9600.bps(), &clocks).unwrap();
 
     let mut value: u8 = 0;
 
     loop {
         // print some value every 500 ms, value will overflow after 255
         writeln!(tx, "value: {value:02}\r").unwrap();
+        defmt::println!("value: {:02}", value);
         value = value.wrapping_add(1);
-        delay.delay(2.secs());
+        delay.delay(500.millis());
     }
 }

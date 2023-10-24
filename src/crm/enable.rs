@@ -97,7 +97,7 @@ bus! {
 }
 
 bus! {
-    USART1 => (APB2, 4),
+    USART1 => (APB2, 14),
     USART2 => (APB1, 17),
 }
 

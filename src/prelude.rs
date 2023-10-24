@@ -70,7 +70,7 @@ pub use crate::serial::TxISR as _at32f4xx_hal_serial_TxISR;
 pub use crate::serial::TxListen as _at32f4xx_hal_serial_TxListen;
 // pub use crate::spi::SpiExt as _at32f4xx_hal_spi_SpiExt;
 // pub use crate::syscfg::SysCfgExt as _at32f4xx_hal_syscfg_SysCfgExt;
-// pub use crate::time::U32Ext as _at32f4xx_hal_time_U32Ext;
+pub use crate::time::U32Ext as _at32f4xx_hal_time_U32Ext;
 #[cfg(feature = "rtic")]
 pub use crate::timer::MonoTimer64Ext as _;
 #[cfg(feature = "rtic")]

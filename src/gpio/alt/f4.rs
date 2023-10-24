@@ -1,17 +1,5 @@
 use super::*;
-use crate::gpio::{self, PushPull};
-
-use core::marker::PhantomData;
-
-/// A filler pin type
-#[derive(Debug, Default)]
-#[cfg_attr(feature = "defmt", derive(defmt::Format))]
-pub struct NoPin<Otype = PushPull>(PhantomData<Otype>);
-impl<Otype> NoPin<Otype> {
-    pub fn new() -> Self {
-        Self(PhantomData)
-    }
-}
+use crate::gpio::{self, PushPull, NoPin};
 
 #[cfg(feature = "tmr1")]
 pub mod tmr1 {
