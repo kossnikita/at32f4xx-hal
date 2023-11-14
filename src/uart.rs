@@ -16,7 +16,7 @@
 
 use crate::pac;
 
-use crate::pac::usart1::RegisterBlock;
+use crate::serial::uart_impls::RegisterBlockUart;
 
 pub use crate::serial::{config, Event, Instance, NoRx, NoTx, Rx, RxISR, Serial, Tx, TxISR};
 pub use config::Config;
@@ -37,19 +37,19 @@ macro_rules! halUart {
             }
 
             fn set_stopbits(&self, bits: config::StopBits) {
-                use crate::pac::uart4::cr2::STOP_A;
+                use crate::pac::uart4::ctrl2::STOPBN_A;
                 use config::StopBits;
 
                 /*
                     StopBits::STOP0P5 and StopBits::STOP1P5 aren't supported when using UART
-                    STOP_A::STOP1 and STOP_A::STOP2 will be used, respectively
+                    STOPBN_A::STOP1 and STOPBN_A::STOP2 will be used, respectively
                 */
-                self.cr2.write(|w| {
-                    w.stop().variant(match bits {
-                        StopBits::STOP0P5 => STOP_A::Stop1,
-                        StopBits::STOP1 => STOP_A::Stop1,
-                        StopBits::STOP1P5 => STOP_A::Stop2,
-                        StopBits::STOP2 => STOP_A::Stop2,
+                self.ctrl2.write(|w| {
+                    w.stopbn().variant(match bits {
+                        StopBits::STOP0P5 => STOPBN_A::Bit1,
+                        StopBits::STOP1 => STOPBN_A::Bit1,
+                        StopBits::STOP1P5 => STOPBN_A::Bit2,
+                        StopBits::STOP2 => STOPBN_A::Bit2,
                     })
                 });
             }
@@ -65,7 +65,3 @@ halUart! { pac::UART5, Serial5, Rx5, Tx5 }
 crate::serial::halUsart! { pac::UART7, Serial7, Rx7, Tx7 }
 #[cfg(feature = "uart8")]
 crate::serial::halUsart! { pac::UART8, Serial8, Rx8, Tx8 }
-#[cfg(feature = "uart9")]
-crate::serial::halUsart! { pac::UART9, Serial9, Rx9, Tx9 }
-#[cfg(feature = "uart10")]
-crate::serial::halUsart! { pac::UART10, Serial10, Rx10, Tx10 }

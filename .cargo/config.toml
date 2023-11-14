@@ -1,5 +1,5 @@
 [target.thumbv7em-none-eabi]
-runner = 'probe-run --chip=AT32F415RCT7'
+runner = 'probe-rs run --chip=AT32F415RCT7'
 rustflags = [
   # `flip-link` moves stack at the end of flash
   #"-C", "linker=flip-link",

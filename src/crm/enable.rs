@@ -101,6 +101,17 @@ bus! {
     USART2 => (APB1, 17),
 }
 
+#[cfg(feature = "usart3")]
+bus! {
+    USART3 => (APB1, 18),
+}
+
+#[cfg(feature = "uart4")]
+bus! {
+    UART4 => (APB1, 19),
+    UART5 => (APB1, 20),
+}
+
 bus! {
     ADC1 => (APB2, 8),
 }

@@ -329,29 +329,29 @@ pub mod usart1 {
 
     pin! {
         <Ck, PushPull> for [
-            PA8<7>,
+            PA8<1>,
         ],
 
         <Cts, PushPull> for [
-            PA11<7>,
+            PA11<1>,
         ],
 
         <Rts, PushPull> for [
-            PA12<7>,
+            PA12<1>,
         ],
     }
 
     pin! {
         <Rx> default: PushPull for no:NoPin, [
-            PA10<7>,
+            PA10<1>,
 
-            PB7<7>,
+            PB7<1>,
         ],
 
         <Tx> default: PushPull for no:NoPin, [
-            PA9<7>,
+            PA9<1>,
 
-            PB6<7>,
+            PB6<1>,
         ],
     }
 
@@ -374,32 +374,25 @@ pub mod usart2 {
 
     pin! {
         <Ck, PushPull> for [
-            PA4<7>,
-
+            PA4<1>,
         ],
 
         <Cts, PushPull> for [
-            PA0<7>,
-
-            #[cfg(not(feature = "gpio-f410"))]
-            PD3<7>,
+            PA0<1>,
         ],
 
         <Rts, PushPull> for [
-            PA1<7>,
-
+            PA1<1>,
         ],
     }
 
     pin! {
         <Rx> default: PushPull for no:NoPin, [
-            PA3<7>,
-
+            PA3<1>,
         ],
 
         <Tx> default: PushPull for no:NoPin, [
-            PA2<7>,
-
+            PA2<1>,
         ],
     }
 
@@ -414,5 +407,87 @@ pub mod usart2 {
     impl SerialRs232 for USART {
         type Cts = Cts;
         type Rts = Rts;
+    }
+}
+
+#[cfg(feature = "usart3")]
+pub mod usart3 {
+    use super::*;
+
+    pin! {
+        <Ck, PushPull> for [
+            PB12<1>,
+        ],
+
+        <Cts, PushPull> for [
+            PB13<1>,
+        ],
+
+        <Rts, PushPull> for [
+            PB14<1>,
+        ],
+    }
+
+    pin! {
+        <Rx> default: PushPull for no:NoPin, [
+            PB11<1>,
+        ],
+
+        <Tx> default: PushPull for no:NoPin, [
+            PB10<1>,
+        ],
+    }
+
+    use crate::pac::USART3 as USART;
+    impl SerialAsync for USART {
+        type Rx<Otype> = Rx<Otype>;
+        type Tx<Otype> = Tx<Otype>;
+    }
+    impl SerialSync for USART {
+        type Ck = Ck;
+    }
+    impl SerialRs232 for USART {
+        type Cts = Cts;
+        type Rts = Rts;
+    }
+}
+
+#[cfg(feature = "uart4")]
+pub mod uart4 {
+    use super::*;
+    pin! {
+        <Rx> default: PushPull for no:NoPin, [
+            PC11<0>,
+            PF5<1>,
+        ],
+        <Tx> default: PushPull for no:NoPin, [
+            PC10<0>,
+            PF4<1>,
+        ],
+    }
+
+    use crate::pac::UART4 as UART;
+    impl SerialAsync for UART {
+        type Rx<Otype> = Rx<Otype>;
+        type Tx<Otype> = Tx<Otype>;
+    }
+}
+
+#[cfg(feature = "uart5")]
+pub mod uart5 {
+    use super::*;
+    pin! {
+        <Rx> default: PushPull for no:NoPin, [
+            PD2<0>,
+        ],
+        <Tx> default: PushPull for no:NoPin, [
+            PC12<0>,
+        ],
+    }
+
+    use crate::pac::UART5 as UART;
+    impl SerialAsync for UART {
+        type Rx<Otype> = Rx<Otype>;
+        type Tx<Otype> = Tx<Otype>;
     }
 }

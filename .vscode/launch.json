@@ -7,7 +7,6 @@
     "version": "0.2.0",
     "configurations": [
         {
-            // "preLaunchTask": "${defaultBuildTask}",
             "type": "probe-rs-debug",
             "request": "launch",
             "name": "probe-rs",
@@ -15,8 +14,8 @@
             "chip": "Cortex-M4",
             "coreConfigs": [
                 {
-                    "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/examples/timer-syst",
-                    "svdFile": "${workspaceFolder}/AT32F415.svd",
+                    "programBinary": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/examples/serial",
+                    "svdFile": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/build/at32f4xx-pac-90fcb4534ceda315/out/peripheral.svd",
                     "rttEnabled": true,
                     "rttChannelFormats": [
                         {
@@ -31,6 +30,21 @@
                 "DEFMT_LOG": "info"
             },
             "consoleLogLevel": "Info"
+        },
+        {
+            "name": "Debug with OpenOCD",
+            "executable": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/examples/serial-bidirect",
+            "request": "launch",
+            "type": "cortex-debug",
+            "servertype": "openocd",
+            "serverpath": "D:/ARM/tool-openocd-at32-0.1100.220911/bin/openocd.exe",
+            "configFiles": [
+                "interface/stlink.cfg",
+                "target/at32f415xx.cfg"
+            ],
+            "runToEntryPoint": "main",
+            "svdFile": "${workspaceFolder}/target/thumbv7em-none-eabi/debug/build/at32f4xx-pac-90fcb4534ceda315/out/peripheral.svd",
+            "showDevDebugOutput": "none"
         }
     ]
 }
