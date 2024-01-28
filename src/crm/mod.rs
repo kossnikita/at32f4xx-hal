@@ -168,17 +168,52 @@ macro_rules! bus_struct {
     };
 }
 
+#[cfg(feature = "at32f415")]
 bus_struct! {
     APB1 => (APB1EN, apb1en, APB1RST, apb1rst, "Advanced Peripheral Bus 1 (APB1) registers"),
     APB2 => (APB2EN, apb2en, APB2RST, apb2rst, "Advanced Peripheral Bus 2 (APB2) registers"),
     AHB => (AHBEN, ahben, AHBRST, ahbrst, "Advanced High-performance Bus  (AHB) registers"),
 }
 
+#[cfg(any(feature = "at32f435", feature = "at32f437"))]
+bus_struct! {
+    APB1 => (APB1EN, apb1en, APB1RST, apb1rst, "Advanced Peripheral Bus 1 (APB1) registers"),
+    APB2 => (APB2EN, apb2en, APB2RST, apb2rst, "Advanced Peripheral Bus 2 (APB2) registers"),
+    AHB1 => (AHBEN1, ahb1en, AHBRST1, ahbrst, "Advanced High-performance Bus 1 (AHB1) registers"),
+    AHB2 => (AHBEN2, ahb2en, AHBRST2, ahbrst, "Advanced High-performance Bus 2 (AHB2) registers"),
+    AHB3 => (AHBEN3, ahb3en, AHBRST3, ahbrst, "Advanced High-performance Bus 3 (AHB3) registers"),
+}
+
+#[cfg(feature = "at32f415")]
 impl BusClock for AHB {
     fn clock(clocks: &Clocks) -> Hertz {
         clocks.hclk
     }
 }
+
+//////////////////////////////////////////////////////////
+// Here may use macro?
+#[cfg(any(feature = "at32f435", feature = "at32f437"))]
+impl BusClock for AHB1 {
+    fn clock(clocks: &Clocks) -> Hertz {
+        clocks.hclk
+    }
+}
+
+#[cfg(any(feature = "at32f435", feature = "at32f437"))]
+impl BusClock for AHB2 {
+    fn clock(clocks: &Clocks) -> Hertz {
+        clocks.hclk
+    }
+}
+
+#[cfg(any(feature = "at32f435", feature = "at32f437"))]
+impl BusClock for AHB3 {
+    fn clock(clocks: &Clocks) -> Hertz {
+        clocks.hclk
+    }
+}
+//////////////////////////////////////////////////////////
 
 impl BusClock for APB1 {
     fn clock(clocks: &Clocks) -> Hertz {
