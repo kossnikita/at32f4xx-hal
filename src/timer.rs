@@ -761,7 +761,7 @@ tmr!(pac::TMR9: [Timer9, u16, c: (2),]);
 tmr!(pac::TMR12: [Timer12, u16, c: (4),]);
 
 #[cfg(feature = "tmr13")]
-tmr!(pac::TMR13: [Timer13, u16, c: (4), m:]);
+tmr!(pac::TMR13: [Timer13, u16, c: (4),]);
 
 #[cfg(feature = "tmr14")]
 tmr!(pac::TMR14: [Timer14, u16, c: (4),]);
