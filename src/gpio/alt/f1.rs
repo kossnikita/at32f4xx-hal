@@ -7,53 +7,60 @@ pub mod tmr1 {
 
     pin! {
         <Ch1> default: PushPull for [
-            PA8<2>,
+            PA8<1>,
+
+            #[cfg(feature = "f403a-peripheral")]
+            PE9<1>,
+
+            #[cfg(feature = "f415-peripheral")]
+            PC6<1>,
         ],
 
         <Ch1N> default: PushPull for [
-            PA7<2>,
+            PA7<1>,
 
-            PB13<2>,
-
+            PB13<1>,
         ],
 
         <Ch2> default: PushPull for [
-            PA9<2>,
+            PA9<1>,
+
         ],
 
         <Ch2N> default: PushPull for [
-            PB0<2>,
+            PB0<1>,
 
-            PB14<2>,
+            PB14<1>,
+
         ],
 
         <Ch3> default: PushPull for [
-            PA10<2>,
+            PA10<1>,
+
         ],
 
         <Ch3N> default: PushPull for [
-            PB1<2>,
+            PB1<1>,
 
-            PB15<2>,
+            PB15<1>,
+
         ],
 
         <Ch4> default: PushPull for [
-            PA11<2>,
+            PA11<1>,
 
         ],
     }
 
     pin! {
         <Bkin, PushPull> for [
-            PA6<2>,
+            PA6<1>,
 
-            PB12<2>,
+            PB12<1>,
         ],
 
         <Ext, PushPull> for [
-            PA0<5>,
-
-            PA12<2>,
+            PA12<1>,
         ],
     }
 

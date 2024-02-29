@@ -288,35 +288,6 @@ where
     }
 }
 
-impl<const P: char, const N: u8, MODE> Pin<P, N, MODE>
-where
-    MODE: marker::OutputSpeed,
-{
-    /// Set pin speed
-    pub fn set_speed(&mut self, speed: Speed) {
-        let offset = 4 * { N };
-        match N {
-            0..=7 => unsafe {
-                (*Gpio::<P>::ptr()).cfglr.modify(|r, w| {
-                    w.bits((r.bits() & !(0b11 << offset)) | ((speed as u32) << offset))
-                });
-            },
-            8..=15 => unsafe {
-                (*Gpio::<P>::ptr()).cfghr.modify(|r, w| {
-                    w.bits((r.bits() & !(0b11 << offset)) | ((speed as u32) << offset))
-                });
-            },
-            _ => unreachable!(),
-        }
-    }
-
-    /// Set pin speed
-    pub fn speed(mut self, speed: Speed) -> Self {
-        self.set_speed(speed);
-        self
-    }
-}
-
 impl<const P: char, const N: u8, MODE> PinPull for Pin<P, N, MODE>
 where
     MODE: marker::Active,
@@ -324,80 +295,6 @@ where
     #[inline(always)]
     fn set_internal_resistor(&mut self, resistor: Pull) {
         self.set_internal_resistor(resistor)
-    }
-}
-
-impl<const P: char, const N: u8, MODE> Pin<P, N, MODE>
-where
-    MODE: marker::Active,
-{
-    /// Set the internal pull-up and pull-down resistor
-    pub fn set_internal_resistor(&mut self, resistor: Pull) {
-        let offset = 4 * { N };
-        let value = match resistor {
-            Pull::Down => 0,
-            Pull::Up => 1,
-            _ => 2,
-        };
-
-        if resistor == Pull::None {
-            match N {
-                0..=7 => unsafe {
-                    (*Gpio::<P>::ptr())
-                        .cfglr
-                        .modify(|r, w| w.bits(r.bits() & !(0b1 << (offset + 3))))
-                },
-                8..=15 => unsafe {
-                    (*Gpio::<P>::ptr())
-                        .cfghr
-                        .modify(|r, w| w.bits(r.bits() & !(0b1 << (offset + 3))))
-                },
-                _ => unreachable!(),
-            }
-        } else {
-            match N {
-                0..=7 => unsafe {
-                    (*Gpio::<P>::ptr()).cfglr.modify(|r, w| {
-                        w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2)))
-                    })
-                },
-                8..=15 => unsafe {
-                    (*Gpio::<P>::ptr()).cfghr.modify(|r, w| {
-                        w.bits(r.bits() & !(0b11 << (offset + 2)) | (0b10 << (offset + 2)))
-                    })
-                },
-                _ => unreachable!(),
-            }
-            unsafe {
-                (*Gpio::<P>::ptr())
-                    .odt
-                    .modify(|r, w| w.bits(r.bits() & !(0b1 << N) | (value << N)))
-            }
-        }
-    }
-
-    /// Set the internal pull-up and pull-down resistor
-    pub fn internal_resistor(mut self, resistor: Pull) -> Self {
-        self.set_internal_resistor(resistor);
-        self
-    }
-
-    /// Enables / disables the internal pull up
-    pub fn internal_pull_up(self, on: bool) -> Self {
-        if on {
-            self.internal_resistor(Pull::Up)
-        } else {
-            self.internal_resistor(Pull::None)
-        }
-    }
-
-    /// Enables / disables the internal pull down
-    pub fn internal_pull_down(self, on: bool) -> Self {
-        if on {
-            self.internal_resistor(Pull::Down)
-        } else {
-            self.internal_resistor(Pull::None)
-        }
     }
 }
 
@@ -452,22 +349,22 @@ impl<const P: char, const N: u8, MODE> Pin<P, N, MODE> {
     #[inline(always)]
     fn _set_high(&mut self) {
         // NOTE(unsafe) atomic write to a stateless register
-        unsafe { (*Gpio::<P>::ptr()).scr.write(|w| w.bits(1 << N)) }
+        unsafe { (*Gpio::<P>::ptr()).scr().write(|w| w.bits(1 << N)) }
     }
     #[inline(always)]
     fn _set_low(&mut self) {
         // NOTE(unsafe) atomic write to a stateless register
-        unsafe { (*Gpio::<P>::ptr()).scr.write(|w| w.bits(1 << (16 + N))) }
+        unsafe { (*Gpio::<P>::ptr()).scr().write(|w| w.bits(1 << (16 + N))) }
     }
     #[inline(always)]
     fn _is_set_low(&self) -> bool {
         // NOTE(unsafe) atomic read with no side effects
-        unsafe { (*Gpio::<P>::ptr()).odt.read().bits() & (1 << N) == 0 }
+        unsafe { (*Gpio::<P>::ptr()).odt().read().bits() & (1 << N) == 0 }
     }
     #[inline(always)]
     fn _is_low(&self) -> bool {
         // NOTE(unsafe) atomic read with no side effects
-        unsafe { (*Gpio::<P>::ptr()).idt.read().bits() & (1 << N) == 0 }
+        unsafe { (*Gpio::<P>::ptr()).idt().read().bits() & (1 << N) == 0 }
     }
 }
 
@@ -670,7 +567,14 @@ macro_rules! gpio {
 }
 use gpio;
 
+#[cfg(feature = "legacy-gpio")]
+mod f1;
+#[cfg(feature = "legacy-gpio")]
+pub use f1::*;
+
+#[cfg(feature = "new-gpio")]
 mod f4;
+#[cfg(feature = "new-gpio")]
 pub use f4::*;
 
 struct Gpio<const P: char>;

@@ -112,14 +112,14 @@ macro_rules! hal {
                         .c2c()
                         .c2ifp2()
                 });
-                self.cctrl
+                self.cctrl()
                     .write(|w| w.c1p().high().c2p().high().c1en().enable().c2en().enable());
                 // enable and configure to capture on rising edge
-                self.stctrl.modify(|_, w| w.smsel().encoder_a());
+                self.stctrl().modify(|_, w| w.smsel().encoder_a());
                 self.set_auto_reload(<$TMR as General>::Width::MAX as u32)
                     .unwrap();
                 self.set_prescaler(2);
-                self.ctrl1.modify(|_, w| w.prben().enable());
+                self.ctrl1().modify(|_, w| w.prben().enable());
                 self.enable_counter();
             }
 

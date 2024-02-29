@@ -1,4 +1,11 @@
+#[cfg(feature = "at32f415")]
+mod f1;
+#[cfg(feature = "at32f415")]
+pub use f1::*;
+
+#[cfg(feature = "at32f421")]
 mod f4;
+#[cfg(feature = "at32f421")]
 pub use f4::*;
 
 // macro_rules! extipin {

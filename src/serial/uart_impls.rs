@@ -145,18 +145,20 @@ macro_rules! uartCommon {
                 };
 
                 let register_block = unsafe { &*UART::ptr() };
-                register_block
-                    .baudr
-                    .write(|w| w.bits(div.try_into().unwrap()));
+                unsafe {
+                    register_block
+                        .baudr()
+                        .write(|w| w.bits(div.try_into().unwrap()));
+                }
 
                 // Reset other registers to disable advanced USART features
-                register_block.ctrl2.reset();
-                register_block.ctrl3.reset();
+                register_block.ctrl2().reset();
+                register_block.ctrl3().reset();
 
                 // Enable transmission and receiving
                 // and configure frame
 
-                register_block.ctrl1.write(|w| {
+                register_block.ctrl1().write(|w| {
                     w.uen().enable();
                     w.ten().enable();
                     w.ren().enable();
@@ -166,10 +168,10 @@ macro_rules! uartCommon {
                 });
 
                 match config.dma {
-                    DmaConfig::Tx => register_block.ctrl3.write(|w| w.dmaten().enable()),
-                    DmaConfig::Rx => register_block.ctrl3.write(|w| w.dmaren().enable()),
+                    DmaConfig::Tx => register_block.ctrl3().write(|w| w.dmaten().enable()),
+                    DmaConfig::Rx => register_block.ctrl3().write(|w| w.dmaren().enable()),
                     DmaConfig::TxRx => register_block
-                        .ctrl3
+                        .ctrl3()
                         .write(|w| w.dmaren().enable().dmaten().enable()),
                     DmaConfig::None => {}
                 }
@@ -184,7 +186,7 @@ macro_rules! uartCommon {
 
             fn read_u16(&self) -> nb::Result<u16, Error> {
                 // NOTE(unsafe) atomic read with no side effects
-                let sts = self.sts.read();
+                let sts = self.sts().read();
 
                 // Any error requires the dr to be read to clear
                 if sts.perr().bit_is_set()
@@ -192,7 +194,7 @@ macro_rules! uartCommon {
                     || sts.nerr().bit_is_set()
                     || sts.roerr().bit_is_set()
                 {
-                    self.dt.read();
+                    self.dt().read();
                 }
 
                 Err(if sts.perr().is_error() {
@@ -205,7 +207,7 @@ macro_rules! uartCommon {
                     Error::Overrun.into()
                 } else if sts.rdbf().is_full() {
                     // NOTE(unsafe) atomic read from stateless register
-                    return Ok(self.dt.read().bits());
+                    return Ok(self.dt().read().bits());
                 } else {
                     nb::Error::WouldBlock
                 })
@@ -213,11 +215,11 @@ macro_rules! uartCommon {
 
             fn write_u16(&self, word: u16) -> nb::Result<(), Error> {
                 // NOTE(unsafe) atomic read with no side effects
-                let sts = self.sts.read();
+                let sts = self.sts().read();
 
                 if sts.tdbe().is_empty() {
                     // NOTE(unsafe) atomic write to stateless register
-                    self.dt.write(|w| unsafe { w.bits(word) });
+                    self.dt().write(|w| unsafe { w.bits(word) });
                     Ok(())
                 } else {
                     Err(nb::Error::WouldBlock)
@@ -226,7 +228,7 @@ macro_rules! uartCommon {
 
             fn flush(&self) -> nb::Result<(), Error> {
                 // NOTE(unsafe) atomic read with no side effects
-                let sts = self.sts.read();
+                let sts = self.sts().read();
 
                 if sts.tdc().is_completed() {
                     Ok(())
@@ -236,64 +238,64 @@ macro_rules! uartCommon {
             }
 
             fn is_idle(&self) -> bool {
-                self.sts.read().idlef().is_idle()
+                self.sts().read().idlef().is_idle()
             }
 
             fn is_rx_not_empty(&self) -> bool {
-                self.sts.read().rdbf().is_full()
+                self.sts().read().rdbf().is_full()
             }
 
             fn clear_idle_interrupt(&self) {
-                let _ = self.sts.read();
-                let _ = self.dt.read();
+                let _ = self.sts().read();
+                let _ = self.dt().read();
             }
 
             fn is_tx_empty(&self) -> bool {
-                self.sts.read().tdbe().is_empty()
+                self.sts().read().tdbe().is_empty()
             }
 
             fn listen_rxne(&self) {
-                self.ctrl1.modify(|_, w| w.rdbfien().enable())
+                self.ctrl1().modify(|_, w| w.rdbfien().enable())
             }
 
             fn unlisten_rxne(&self) {
-                self.ctrl1.modify(|_, w| w.rdbfien().disable())
+                self.ctrl1().modify(|_, w| w.rdbfien().disable())
             }
 
             fn listen_idle(&self) {
-                self.ctrl1.modify(|_, w| w.idleien().enable())
+                self.ctrl1().modify(|_, w| w.idleien().enable())
             }
 
             fn unlisten_idle(&self) {
-                self.ctrl1.modify(|_, w| w.idleien().disable())
+                self.ctrl1().modify(|_, w| w.idleien().disable())
             }
 
             fn listen_txe(&self) {
-                self.ctrl1.modify(|_, w| w.tdbeien().enable())
+                self.ctrl1().modify(|_, w| w.tdbeien().enable())
             }
 
             fn unlisten_txe(&self) {
-                self.ctrl1.modify(|_, w| w.tdbeien().disable())
+                self.ctrl1().modify(|_, w| w.tdbeien().disable())
             }
 
             fn listen(&self, event: Event) {
                 match event {
-                    Event::Rxne => self.ctrl1.modify(|_, w| w.rdbfien().enable()),
-                    Event::Txe => self.ctrl1.modify(|_, w| w.tdbeien().enable()),
-                    Event::Idle => self.ctrl1.modify(|_, w| w.idleien().enable()),
+                    Event::Rxne => self.ctrl1().modify(|_, w| w.rdbfien().enable()),
+                    Event::Txe => self.ctrl1().modify(|_, w| w.tdbeien().enable()),
+                    Event::Idle => self.ctrl1().modify(|_, w| w.idleien().enable()),
                 }
             }
 
             fn unlisten(&self, event: Event) {
                 match event {
-                    Event::Rxne => self.ctrl1.modify(|_, w| w.rdbfien().disable()),
-                    Event::Txe => self.ctrl1.modify(|_, w| w.tdbeien().disable()),
-                    Event::Idle => self.ctrl1.modify(|_, w| w.idleien().disable()),
+                    Event::Rxne => self.ctrl1().modify(|_, w| w.rdbfien().disable()),
+                    Event::Txe => self.ctrl1().modify(|_, w| w.tdbeien().disable()),
+                    Event::Idle => self.ctrl1().modify(|_, w| w.idleien().disable()),
                 }
             }
 
             fn peri_address(&self) -> u32 {
-                &self.dt as *const _ as u32
+                &self.dt() as *const _ as u32
             }
         }
     };

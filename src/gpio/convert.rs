@@ -140,30 +140,38 @@ macro_rules! change_mode {
     };
 }
 
-#[cfg(feature = "new-gpio")]
 macro_rules! change_mode {
     ($block:expr, $N:ident) => {
         let offset = 2 * $N;
         unsafe {
-            if MODE::IOMC != M::IOMC {
-                $block
-                    .cfgr
-                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+            if MODE::OMODE != M::OMODE {
+                if let Some(otyper) = M::OMODE {
+                    $block
+                        .omode()
+                        .modify(|r, w| w.bits(r.bits() & !(0b1 << $N) | (otyper << $N)));
+                }
             }
-            if MODE::OM != M::OM {
-                $block
-                    .cfgr
-                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+
+            if MODE::MUX != M::MUX {
+                if let Some(afr) = M::MUX {
+                    if $N < 8 {
+                        let offset2 = 4 * { $N };
+                        $block.muxl().modify(|r, w| {
+                            w.bits((r.bits() & !(0b1111 << offset2)) | (afr << offset2))
+                        });
+                    } else {
+                        let offset2 = 4 * { $N - 8 };
+                        $block.muxh().modify(|r, w| {
+                            w.bits((r.bits() & !(0b1111 << offset2)) | (afr << offset2))
+                        });
+                    }
+                }
             }
-            if MODE::ODRV != M::ODRV {
+
+            if MODE::CFGR != M::CFGR {
                 $block
-                    .cfgr
-                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
-            }
-            if MODE::PUPD != M::PUPD {
-                $block
-                    .cfgr
-                    .modify(|r, w| w.bits(r.bits() & !(0b11 << offset) | (M::IOMC << offset)));
+                    .cfgr()
+                    .modify(|r, w| w.bits((r.bits() & !(0b11 << offset)) | (M::CFGR << offset)));
             }
         }
     };
@@ -336,13 +344,11 @@ pub trait PinMode: crate::Sealed {
     // They are not part of public API.
 
     #[doc(hidden)]
-    const IOMC: u32 = u32::MAX;
+    const CFGR: u32 = u32::MAX;
     #[doc(hidden)]
-    const OM: u32 = u32::MAX;
+    const OMODE: Option<u32> = None;
     #[doc(hidden)]
-    const ODRV: u32 = u32::MAX;
-    #[doc(hidden)]
-    const PUPD: u32 = u32::MAX;
+    const MUX: Option<u32> = None;
 }
 
 impl crate::Sealed for Input {}
@@ -355,7 +361,7 @@ impl PinMode for Input {
 
 #[cfg(feature = "new-gpio")]
 impl PinMode for Input {
-    const IOMC: u32 = 0b00;
+    const CFGR: u32 = 0b00;
 }
 
 impl crate::Sealed for Analog {}
@@ -367,7 +373,7 @@ impl PinMode for Analog {
 
 #[cfg(feature = "new-gpio")]
 impl PinMode for Analog {
-    const IOMC: u32 = 0b11;
+    const CFGR: u32 = 0b11;
 }
 
 impl<Otype> crate::Sealed for Output<Otype> {}
@@ -379,8 +385,8 @@ impl PinMode for Output<OpenDrain> {
 
 #[cfg(feature = "new-gpio")]
 impl PinMode for Output<OpenDrain> {
-    const IOMC: u32 = 0b01;
-    const OM: u32 = 0b1;
+    const CFGR: u32 = 0b01;
+    const OMODE: Option<u32> = Some(0b1);
 }
 
 #[cfg(feature = "legacy-gpio")]
@@ -391,7 +397,8 @@ impl PinMode for Output<PushPull> {
 
 #[cfg(feature = "new-gpio")]
 impl PinMode for Output<PushPull> {
-    const IOMC: u32 = 0b10;
+    const CFGR: u32 = 0b01;
+    const OMODE: Option<u32> = Some(0b0);
 }
 
 impl<const A: u8, Otype> crate::Sealed for Alternate<A, Otype> {}
@@ -403,7 +410,8 @@ impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
 
 #[cfg(feature = "new-gpio")]
 impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
-    const OM: u32 = 0b1;
+    const CFGR: u32 = 0b10;
+    const OMODE: Option<u32> = Some(0b1);
 }
 
 #[cfg(feature = "legacy-gpio")]
@@ -414,8 +422,8 @@ impl<const A: u8> PinMode for Alternate<A, PushPull> {
 
 #[cfg(feature = "new-gpio")]
 impl<const A: u8> PinMode for Alternate<A, PushPull> {
-    const IOMC: u32 = 0b10;
-    const OM: u32 = 0b0;
+    const CFGR: u32 = 0b10;
+    const OMODE: Option<u32> = Some(0b0);
 }
 
 #[cfg(feature = "legacy-gpio")]

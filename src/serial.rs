@@ -207,7 +207,7 @@ macro_rules! halUsart {
                 use crate::pac::usart1::ctrl2::STOPBN_A;
                 use config::StopBits;
 
-                self.ctrl2.write(|w| {
+                self.ctrl2().write(|w| {
                     w.stopbn().variant(match bits {
                         StopBits::STOP0P5 => STOPBN_A::Bit05,
                         StopBits::STOP1 => STOPBN_A::Bit1,

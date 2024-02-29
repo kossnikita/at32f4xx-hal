@@ -16,6 +16,7 @@
 
 use crate::pac;
 
+#[cfg(feature = "uart4")]
 use crate::serial::uart_impls::RegisterBlockUart;
 
 pub use crate::serial::{config, Event, Instance, NoRx, NoTx, Rx, RxISR, Serial, Tx, TxISR};

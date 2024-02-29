@@ -8,11 +8,11 @@ mod nb {
     impl<USART: Instance, WORD> ErrorType for Serial<USART, WORD> {
         type Error = Error;
     }
-    
+
     impl<USART: Instance, WORD> ErrorType for Rx<USART, WORD> {
         type Error = Error;
     }
-    
+
     impl<USART: Instance, WORD> ErrorType for Tx<USART, WORD> {
         type Error = Error;
     }
@@ -99,18 +99,18 @@ mod nb {
 mod blocking {
     use core::ops::Deref;
 
-    use super::super::{Instance, RegisterBlockImpl, Serial, Tx, Rx};
-    use embedded_io::{ErrorType, ErrorKind, Read, Write};
+    use super::super::{Instance, RegisterBlockImpl, Rx, Serial, Tx};
+    use embedded_io::{ErrorKind, ErrorType, Read, Write};
     use nb::block;
 
     impl<USART: Instance, WORD> ErrorType for Serial<USART, WORD> {
         type Error = ErrorKind;
     }
-    
+
     impl<USART: Instance, WORD> ErrorType for Rx<USART, WORD> {
         type Error = ErrorKind;
     }
-    
+
     impl<USART: Instance, WORD> ErrorType for Tx<USART, WORD> {
         type Error = ErrorKind;
     }
@@ -143,7 +143,7 @@ mod blocking {
         fn flush(&mut self) -> Result<(), Self::Error> {
             match block!(self.usart.flush()) {
                 Ok(()) => Ok(()),
-                Err(_) => Err(Self::Error::Other)
+                Err(_) => Err(Self::Error::Other),
             }
         }
     }

@@ -145,6 +145,17 @@ where
     }
 }
 
+#[cfg(any(
+    feature = "at32a403a",
+    feature = "at32f403",
+    feature = "at32f403a",
+    feature = "at32f407",
+    feature = "at32f413",
+    feature = "at32f415",
+    feature = "at32f421",
+    feature = "at32f425",
+    feature = "at32wb415"
+))]
 macro_rules! bus_struct {
     ($( $(#[$attr:meta])* $busX:ident => ($EN:ident, $en:ident, $RST:ident, $rst:ident, $doc:literal),)+) => {
         $(
@@ -157,21 +168,81 @@ macro_rules! bus_struct {
             $(#[$attr])*
             impl $busX {
                 pub(crate) fn enr(crm: &CrmRB) -> &crm::$EN {
-                    &crm.$en
+                    &crm.$en()
                 }
 
                 pub(crate) fn rstr(crm: &CrmRB) -> &crm::$RST {
-                    &crm.$rst
+                    &crm.$rst()
                 }
             }
         )+
     };
 }
 
+#[cfg(any(
+    feature = "at32f402",
+    feature = "at32f405",
+    feature = "at32f423",
+    feature = "at32f435",
+    feature = "at32f437"
+))]
+macro_rules! bus_struct {
+    ($( $(#[$attr:meta])* $busX:ident => ($EN:ident, $en:ident, $LPEN:ident, $lpen:ident, $RST:ident, $rst:ident, $doc:literal),)+) => {
+        $(
+            $(#[$attr])*
+            #[doc = $doc]
+            pub struct $busX {
+                _0: (),
+            }
+
+            $(#[$attr])*
+            impl $busX {
+                pub(crate) fn enr(crm: &CrmRB) -> &crm::$EN {
+                    &crm.$en()
+                }
+
+                pub(crate) fn lpenr(crm: &CrmRB) -> &crm::$LPEN {
+                    &crm.$lpen()
+                }
+
+                pub(crate) fn rstr(crm: &CrmRB) -> &crm::$RST {
+                    &crm.$rst()
+                }
+            }
+        )+
+    };
+}
+
+#[cfg(any(
+    feature = "at32a403a",
+    feature = "at32f403",
+    feature = "at32f403a",
+    feature = "at32f407",
+    feature = "at32f413",
+    feature = "at32f415",
+    feature = "at32f421",
+    feature = "at32f425",
+    feature = "at32wb415"
+))]
 bus_struct! {
     APB1 => (APB1EN, apb1en, APB1RST, apb1rst, "Advanced Peripheral Bus 1 (APB1) registers"),
     APB2 => (APB2EN, apb2en, APB2RST, apb2rst, "Advanced Peripheral Bus 2 (APB2) registers"),
-    AHB => (AHBEN, ahben, AHBRST, ahbrst, "Advanced High-performance Bus  (AHB) registers"),
+    AHB => (AHBEN, ahben, AHBRST, ahbrst, "Advanced High-performance Bus (AHB) registers"),
+}
+
+#[cfg(any(
+    feature = "at32f402",
+    feature = "at32f405",
+    feature = "at32f423",
+    feature = "at32f435",
+    feature = "at32f437"
+))]
+bus_struct! {
+    APB1 => (APB1EN, apb1en, APBLP1EN, apblp1en, APB1RST, apb1rst, "Advanced Peripheral Bus 1 (APB1) registers"),
+    APB2 => (APB2EN, apb2en, APBLP2EN, apblp2en, APB2RST, apb2rst, "Advanced Peripheral Bus 2 (APB2) registers"),
+    AHB1 => (AHBEN1, ahben1, AHBLPEN1, ahblpen1, AHBRST1, ahbrst1, "Advanced High-performance Bus 1 (AHB1) registers"),
+    AHB2 => (AHBEN2, ahben2, AHBLPEN2, ahblpen2, AHBRST2, ahbrst2, "Advanced High-performance Bus 2 (AHB2) registers"),
+    AHB3 => (AHBEN3, ahben3, AHBLPEN3, ahblpen3, AHBRST3, ahbrst3, "Advanced High-performance Bus 3 (AHB3) registers"),
 }
 
 impl BusClock for AHB {
@@ -290,7 +361,7 @@ impl CFGR {
 
         unsafe {
             let flash = &(*FLASH::ptr());
-            flash.psr.modify(|_, w| {
+            flash.psr().modify(|_, w| {
                 w.pft_en().set_bit();
                 w.wtcyc().bits(((sclk - 1) / flash_latency_step) as u8)
             });
@@ -405,36 +476,36 @@ impl CFGR {
 
         if !hick_div {
             // disable HICK /6 division
-            crm.misc1.modify(|_, w| w.hickdiv().bit(!hick_div));
-            crm.misc2.modify(|_, w| w.hick_to_sclk().bit(!hick_div));
+            crm.misc1().modify(|_, w| w.hickdiv().bit(!hick_div));
+            crm.misc2().modify(|_, w| w.hick_to_sclk().bit(!hick_div));
         }
 
         if self.hext.is_some() {
             // enable HEXT and wait for it to be ready
-            crm.ctrl.modify(|_, w| {
+            crm.ctrl().modify(|_, w| {
                 if self.hext_bypass {
                     w.hextbyps().set_bit();
                 }
                 w.hexten().set_bit()
             });
-            while crm.ctrl.read().hextstbl().bit_is_clear() {}
+            while crm.ctrl().read().hextstbl().bit_is_clear() {}
         }
 
         if plls.use_pll {
             // Enable PLL
-            crm.ctrl.modify(|_, w| w.pllen().set_bit());
+            crm.ctrl().modify(|_, w| w.pllen().set_bit());
 
             // Wait for PLL to stabilise
-            while crm.ctrl.read().pllstbl().bit_is_clear() {}
+            while crm.ctrl().read().pllstbl().bit_is_clear() {}
         }
 
-        crm.cfg.modify(|_, w| w.ahbdiv().variant(ahbdiv_bits));
+        crm.cfg().modify(|_, w| w.ahbdiv().variant(ahbdiv_bits));
 
         // Wait for the new prescalers to kick in
         // "The clocks are divided with the new prescaler factor from 1 to 16 AHB cycles after write"
         cortex_m::asm::delay(16);
 
-        crm.cfg.modify(|_, w| {
+        crm.cfg().modify(|_, w| {
             w.sclksel().variant(if sclk_on_pll {
                 SCLKSEL_A::Pll
             } else if self.hext.is_some() {

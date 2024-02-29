@@ -15,7 +15,7 @@ pub enum Error {
 
 impl Error {
     fn read(flash: &FLASH) -> Option<Self> {
-        let sts = flash.sts.read();
+        let sts = flash.sts().read();
         if sts.prgmerr().bit() {
             Some(Error::Programming)
         } else if sts.epperr().bit() {
@@ -176,10 +176,10 @@ impl UnlockedFlash<'_> {
     /// to which memory address.
     pub fn erase(&mut self, page: u8) -> Result<(), Error> {
         self.flash
-            .addr
+            .addr()
             .write(|w| unsafe { w.fa().bits(page.into()) });
         self.flash
-            .ctrl
+            .ctrl()
             .modify(|_, w| w.secers().set_bit().erstr().set_bit());
         self.wait_ready();
         self.ok()
@@ -199,7 +199,7 @@ impl UnlockedFlash<'_> {
 
             #[rustfmt::skip]
             #[allow(unused_unsafe)]
-            self.flash.ctrl.modify(|_, w| unsafe {
+            self.flash.ctrl().modify(|_, w| unsafe {
                 w
                     // programming
                     .fprgm().set_bit()
@@ -228,7 +228,7 @@ impl UnlockedFlash<'_> {
     }
 
     fn wait_ready(&self) {
-        while self.flash.sts.read().obf().bit() {}
+        while self.flash.sts().read().obf().bit() {}
     }
 }
 
@@ -238,16 +238,16 @@ const UNLOCK_KEY2: u32 = 0xCDEF89AB;
 #[allow(unused_unsafe)]
 fn unlock(flash: &FLASH) {
     flash
-        .unlock
+        .unlock()
         .write(|w| unsafe { w.ukval().bits(UNLOCK_KEY1) });
     flash
-        .unlock
+        .unlock()
         .write(|w| unsafe { w.ukval().bits(UNLOCK_KEY2) });
-    assert!(!flash.ctrl.read().oplk().bit())
+    assert!(flash.ctrl().read().oplk().bit_is_clear())
 }
 
 fn lock(flash: &FLASH) {
-    flash.ctrl.modify(|_, w| w.oplk().set_bit());
+    flash.ctrl().modify(|_, w| w.oplk().set_bit());
 }
 
 /// Flash memory sector

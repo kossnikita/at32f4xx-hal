@@ -312,7 +312,7 @@ macro_rules! tmr {
             }
             #[inline(always)]
             unsafe fn set_auto_reload_unchecked(&mut self, pr: u32) {
-                self.pr.write(|w| w.bits(pr.try_into().unwrap()))
+                self.pr().write(|w| w.bits(pr.try_into().unwrap()))
             }
             #[inline(always)]
             fn set_auto_reload(&mut self, pr: u32) -> Result<(), Error> {
@@ -327,83 +327,83 @@ macro_rules! tmr {
             #[inline(always)]
             fn read_auto_reload() -> u32 {
                 let tmr = unsafe { &*<$TMR>::ptr() };
-                tmr.pr.read().bits().into()
+                tmr.pr().read().bits().into()
             }
             #[inline(always)]
             fn enable_preload(&mut self, b: bool) {
-                self.ctrl1.modify(|_, w| w.prben().bit(b));
+                self.ctrl1().modify(|_, w| w.prben().bit(b));
             }
             #[inline(always)]
             fn enable_counter(&mut self) {
-                self.ctrl1.modify(|_, w| w.tmren().set_bit());
+                self.ctrl1().modify(|_, w| w.tmren().set_bit());
             }
             #[inline(always)]
             fn disable_counter(&mut self) {
-                self.ctrl1.modify(|_, w| w.tmren().clear_bit());
+                self.ctrl1().modify(|_, w| w.tmren().clear_bit());
             }
             #[inline(always)]
             fn is_counter_enabled(&self) -> bool {
-                self.ctrl1.read().tmren().bit()
+                self.ctrl1().read().tmren().bit()
             }
             #[inline(always)]
             fn reset_counter(&mut self) {
-                self.cval.reset();
+                self.cval().reset();
             }
             #[inline(always)]
             #[allow(unused_unsafe)]
             fn set_prescaler(&mut self, div: u16) {
-                self.div.write(|w| unsafe {w.bits(div)} );
+                self.div().write(|w| unsafe {w.bits(div)} );
             }
             #[inline(always)]
             fn read_prescaler(&self) -> u16 {
-                self.div.read().bits()
+                self.div().read().bits()
             }
             #[inline(always)]
             fn trigger_update(&mut self) {
-                self.ctrl1.modify(|_, w| w.ovfs().set_bit());
-                self.swevt.write(|w| w.ovfswtr().set_bit());
-                self.ctrl1.modify(|_, w| w.ovfs().clear_bit());
+                self.ctrl1().modify(|_, w| w.ovfs().set_bit());
+                self.swevt().write(|w| w.ovfswtr().set_bit());
+                self.ctrl1().modify(|_, w| w.ovfs().clear_bit());
             }
             #[inline(always)]
             fn clear_interrupt_flag(&mut self, event: Event) {
-                self.ists.write(|w| unsafe { w.bits(0xffff & !event.bits()) });
+                self.ists().write(|w| unsafe { w.bits(0xffff & !event.bits()) });
             }
             #[inline(always)]
             fn listen_interrupt(&mut self, event: Event, b: bool) {
                 if b {
-                    self.iden.modify(|r, w| unsafe { w.bits(r.bits() | event.bits()) });
+                    self.iden().modify(|r, w| unsafe { w.bits(r.bits() | event.bits()) });
                 } else {
-                    self.iden.modify(|r, w| unsafe { w.bits(r.bits() & !event.bits()) });
+                    self.iden().modify(|r, w| unsafe { w.bits(r.bits() & !event.bits()) });
                 }
             }
             #[inline(always)]
             fn get_interrupt_flag(&self) -> Event {
-                Event::from_bits_truncate(self.ists.read().bits())
+                Event::from_bits_truncate(self.ists().read().bits())
             }
             #[inline(always)]
             fn read_count(&self) -> Self::Width {
-                self.cval.read().bits() as Self::Width
+                self.cval().read().bits() as Self::Width
             }
             #[inline(always)]
             #[allow(unused_unsafe)]
             fn write_count(&mut self, value:Self::Width) {
-                self.cval.write(|w|unsafe{w.bits(value)});
+                self.cval().write(|w|unsafe{w.bits(value)});
             }
             #[inline(always)]
             fn start_one_pulse(&mut self) {
-                self.ctrl1.modify(|_, w| unsafe { w.bits(1 << 3) }.tmren().set_bit());
+                self.ctrl1().modify(|_, w| unsafe { w.bits(1 << 3) }.tmren().set_bit());
             }
             #[inline(always)]
             fn start_free(&mut self, update: bool) {
-                self.ctrl1.modify(|_, w| w.tmren().set_bit().ocmen().bit(!update));
+                self.ctrl1().modify(|_, w| w.tmren().set_bit().ocmen().bit(!update));
             }
             #[inline(always)]
             fn ctrl1_reset(&mut self) {
-                self.ctrl1.reset();
+                self.ctrl1().reset();
             }
             #[inline(always)]
             fn cnt_reset(&mut self) {
-                self.cval.reset();
+                self.cval().reset();
             }
         }
 
@@ -420,7 +420,7 @@ macro_rules! tmr {
                 fn read_cc_value(c: u8) -> u32 {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        tmr.cdt[c as usize].read().bits().try_into().unwrap()
+                        tmr.cdt(c as usize).read().bits().try_into().unwrap()
                     } else {
                         0
                     }
@@ -431,7 +431,7 @@ macro_rules! tmr {
                 fn set_cc_value(c: u8, value: u32) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        tmr.cdt[c as usize].write(|w| unsafe { w.bits(value.try_into().unwrap()) })
+                        tmr.cdt(c as usize).write(|w| unsafe { w.bits(value.try_into().unwrap()) })
                     }
                 }
 
@@ -439,7 +439,7 @@ macro_rules! tmr {
                 fn enable_channel(c: u8, b: bool) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        unsafe { bb::write(&tmr.cctrl, c*4, b); }
+                        unsafe { bb::write(&tmr.cctrl(), c*4, b); }
                     }
                 }
 
@@ -447,7 +447,7 @@ macro_rules! tmr {
                 fn set_channel_polarity(c: u8, p: Polarity) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::CH_NUMBER {
-                        unsafe { bb::write(&tmr.cctrl, c*4 + 1, p == Polarity::ActiveLow); }
+                        unsafe { bb::write(&tmr.cctrl(), c*4 + 1, p == Polarity::ActiveLow); }
                     }
                 }
 
@@ -455,7 +455,7 @@ macro_rules! tmr {
                 fn set_nchannel_polarity(c: u8, p: Polarity) {
                     let tmr = unsafe { &*<$TMR>::ptr() };
                     if c < Self::COMP_CH_NUMBER {
-                        unsafe { bb::write(&tmr.cctrl, c*4 + 3, p == Polarity::ActiveLow); }
+                        unsafe { bb::write(&tmr.cctrl(), c*4 + 3, p == Polarity::ActiveLow); }
                     }
                 }
             }
@@ -466,26 +466,26 @@ macro_rules! tmr {
                         let $aoe = ();
                         let tmr = unsafe { &*<$TMR>::ptr() };
                         if c < Self::COMP_CH_NUMBER {
-                            unsafe { bb::write(&tmr.cctrl, c*4 + 2, b); }
+                            unsafe { bb::write(&tmr.cctrl(), c*4 + 2, b); }
                         }
                     }
                     fn set_dtc_value(value: u8) {
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.brk.modify(|_,w| w.dtc().bits(value));
+                        tmr.brk().modify(|_,w| w.dtc().bits(value));
                     }
                     fn read_dtc_value() -> u8 {
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.brk.read().dtc().bits()
+                        tmr.brk().read().dtc().bits()
                     }
                     fn idle_state(c: u8, comp: bool, s: IdleState) {
                         let tmr = unsafe { &*<$TMR>::ptr() };
                         if !comp {
                             if c < Self::CH_NUMBER {
-                                unsafe { bb::write(&tmr.ctrl2, c*2 + 8, s == IdleState::Set); }
+                                unsafe { bb::write(&tmr.ctrl2(), c*2 + 8, s == IdleState::Set); }
                             }
                         } else {
                             if c < Self::COMP_CH_NUMBER {
-                                unsafe { bb::write(&tmr.ctrl2, c*2 + 9, s == IdleState::Set); }
+                                unsafe { bb::write(&tmr.ctrl2(), c*2 + 9, s == IdleState::Set); }
                             }
                         }
                     }
@@ -493,13 +493,13 @@ macro_rules! tmr {
                     #[inline(always)]
                     fn enable_output(&mut self){
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.brk.modify(|_, w|  w.oen().set_bit());
+                        tmr.brk().modify(|_, w|  w.oen().set_bit());
                     }
 
                     #[inline(always)]
                     fn disable_output(&mut self){
                         let tmr = unsafe { &*<$TMR>::ptr() };
-                        tmr.brk.modify(|_, w|  w.oen().clear_bit());
+                        tmr.brk().modify(|_, w|  w.oen().clear_bit());
                     }
                 }
             )?
@@ -510,7 +510,7 @@ macro_rules! tmr {
         $(impl MasterTimer for $TMR {
             type Ptos = pac::$tmrbase::ctrl2::PTOS_A;
             fn master_mode(&mut self, mode: Self::Ptos) {
-                self.ctrl2.modify(|_,w| w.ptos().variant(mode));
+                self.ctrl2().modify(|_,w| w.ptos().variant(mode));
             }
         })?
 
@@ -551,8 +551,8 @@ macro_rules! with_pwm {
 
             #[inline(always)]
             fn start_pwm(&mut self) {
-                $(let $aoe = self.brk.modify(|_, w| w.aoen().set_bit());)?
-                self.ctrl1.modify(|_, w| w.tmren().set_bit());
+                $(let $aoe = self.brk().modify(|_, w| w.aoen().set_bit());)?
+                self.ctrl1().modify(|_, w| w.tmren().set_bit());
             }
         }
     };
