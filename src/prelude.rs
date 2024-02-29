@@ -37,7 +37,7 @@
 //! use at32f4xx_hal::prelude::*;
 //! ```
 // pub use embedded_hal::adc::OneShot as _embedded_hal_adc_OneShot;
-pub use embedded_hal::delay::DelayUs as _embedded_hal_delay_DelayUs;
+pub use embedded_hal::delay::DelayNs as _embedded_hal_delay_DelayNs;
 pub use embedded_io::Read as _embedded_io_Read;
 pub use embedded_io::Write as _embedded_io_Write;
 pub use fugit::ExtU32 as _fugit_ExtU32;

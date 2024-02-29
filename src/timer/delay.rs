@@ -3,7 +3,7 @@
 use super::{FTimer, Instance, Timer};
 use core::ops::{Deref, DerefMut};
 use cortex_m::peripheral::SYST;
-use fugit::{MicrosDurationU32, TimerDurationU32};
+use fugit::{MicrosDurationU32, NanosDurationU32, TimerDurationU32};
 
 /// Timer as a delay provider (SysTick by default)
 pub struct SysDelay(Timer<SYST>);
@@ -40,6 +40,28 @@ impl SysDelay {
         const MAX_RVR: u32 = 0x00FF_FFFF;
 
         let mut total_rvr = us.ticks() * (self.clk.raw() / 1_000_000);
+
+        while total_rvr != 0 {
+            let current_rvr = total_rvr.min(MAX_RVR);
+
+            self.tmr.set_reload(current_rvr);
+            self.tmr.clear_current();
+            self.tmr.enable_counter();
+
+            // Update the tracking variable while we are waiting...
+            total_rvr -= current_rvr;
+
+            while !self.tmr.has_wrapped() {}
+
+            self.tmr.disable_counter();
+        }
+    }
+
+    pub fn delay_ns(&mut self, ns: NanosDurationU32) {
+        // The SysTick Reload Value register supports values between 1 and 0x00FFFFFF.
+        const MAX_RVR: u32 = 0x00FF_FFFF;
+
+        let mut total_rvr = ns.ticks() * (self.clk.raw() / 1_000_000);
 
         while total_rvr != 0 {
             let current_rvr = total_rvr.min(MAX_RVR);
