@@ -98,6 +98,7 @@ pub use at32f4xx_pac::at32wb415 as pac;
 // Enable use of interrupt macro
 pub use crate::pac::interrupt;
 
+pub mod adc;
 pub mod bb;
 pub mod crm;
 pub mod flash;

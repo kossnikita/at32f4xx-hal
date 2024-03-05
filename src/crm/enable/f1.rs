@@ -80,7 +80,7 @@ bus! {
 }
 
 bus! {
-    ADC1 => (APB2, 8),
+    ADC1 => (APB2, 9),
 }
 
 #[cfg(feature = "tmr1")]

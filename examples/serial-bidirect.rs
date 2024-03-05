@@ -5,8 +5,8 @@ use defmt_rtt as _;
 use panic_probe as _;
 
 use at32f4xx_hal as hal;
-use cortex_m_rt::{entry, exception};
 use cortex_m::peripheral::syst::SystClkSource;
+use cortex_m_rt::{entry, exception};
 
 use crate::hal::{pac, prelude::*, uart::Serial};
 
