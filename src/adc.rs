@@ -544,6 +544,14 @@ macro_rules! adc {
         $(
 
             impl Adc<pac::$adc_type> {
+
+                #[cfg(any(
+                    feature = "at32f402",
+                    feature = "at32f405",
+                    feature = "at32f423",
+                    feature = "at32f435",
+                    feature = "at32f437",
+                ))]
                 adc!(additionals: $adc_type => ($common_type));
 
                 pub fn $constructor_fn_name(adc: pac::$adc_type, reset: bool, config: config::AdcConfig) -> Adc<pac::$adc_type> {
@@ -620,6 +628,29 @@ macro_rules! adc {
                     self.adc_reg.ctrl2().modify(|_, w| w.adcen().disable());
                 }
 
+                #[cfg(any(
+                    feature = "at32f421",
+                ))]
+                pub fn calibrate(&mut self) {
+                    self.enable();
+
+                    // let vref_en = self.temperature_and_vref_enabled();
+                    // if !vref_en {
+                    //     self.enable_temperature_and_vref();
+                    // }
+                    self.adc_reg.ctrl2().modify(|_, w| w.adcalinit().init());
+                    while self.adc_reg.ctrl2().read().adcalinit().is_in_progress() {}
+                    self.adc_reg.ctrl2().modify(|_, w| w.adcal().calibrate());
+                    while self.adc_reg.ctrl2().read().adcal().is_in_progress() {}
+                    // let vref_cal = VrefCal::get().read();
+                    // let vref_samp = self.read(&mut Vref).unwrap(); //This can't actually fail, it's just in a result to satisfy hal trait
+
+                    // self.calibrated_vdda = (VDDA_CALIB * u32::from(vref_cal)) / u32::from(vref_samp);
+                    // if !vref_en {
+                    //     self.disable_temperature_and_vref();
+                    // }
+                }
+
                 /// Starts conversion sequence. Waits for the hardware to indicate it's actually started.
                 pub fn start_conversion(&mut self) {
                     self.enable();
@@ -627,7 +658,7 @@ macro_rules! adc {
                     //Start conversion
                     self.adc_reg.ctrl2().modify(|_, w| w.ocswtrg().triggered());
 
-                    while self.adc_reg.sts().read().occe().is_not_complete() {}
+                    while self.adc_reg.sts().read().occs().is_idle() {}
                 }
 
                 #[cfg(any(
@@ -862,4 +893,20 @@ pub trait Channel<ADC> {
     //const CHANNEL: Self::ID;
 }
 
+#[cfg(not(any(
+    feature = "at32f402",
+    feature = "at32f405",
+    feature = "at32f423",
+    feature = "at32f435",
+    feature = "at32f437",
+)))]
+adc!(ADC1 => (adc1, foo, 8));
+
+#[cfg(any(
+    feature = "at32f402",
+    feature = "at32f405",
+    feature = "at32f423",
+    feature = "at32f435",
+    feature = "at32f437",
+))]
 adc!(ADC1 => (adc1, ADC_COMMON, 8));
