@@ -230,6 +230,9 @@ usart7 = []
 usart8 = []
 
 [[example]]
+name = "adc"
+
+[[example]]
 name = "blinky"
 
 [[example]]
@@ -243,6 +246,9 @@ name = "serial"
 
 [[example]]
 name = "serial-bidirect"
+
+[[example]]
+name = "signature"
 
 [[example]]
 name = "timer-periph"
