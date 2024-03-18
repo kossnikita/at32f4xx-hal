@@ -2,7 +2,6 @@ use crate::crm::{Enable, Reset};
 use crate::{
     gpio::{self, Analog},
     pac,
-    signature::{VrefCal, VDDA_CALIB},
 };
 use core::fmt;
 
@@ -363,7 +362,7 @@ pub mod config {
         pub(crate) external_trigger: (TriggerMode, ExternalTrigger),
         pub(crate) continuous: Continuous,
         pub(crate) dma: Dma,
-        pub(crate) end_of_conversion_interrupt: Eoc,
+        pub(crate) end_of_conversion_interrupt: bool,
         pub(crate) default_sample_time: SampleTime,
         pub(crate) vdda: Option<u32>,
     }
@@ -409,7 +408,7 @@ pub mod config {
             self
         }
         /// change the end_of_conversion_interrupt field
-        pub fn end_of_conversion_interrupt(mut self, end_of_conversion_interrupt: Eoc) -> Self {
+        pub fn end_of_conversion_interrupt(mut self, end_of_conversion_interrupt: bool) -> Self {
             self.end_of_conversion_interrupt = end_of_conversion_interrupt;
             self
         }
@@ -439,7 +438,7 @@ pub mod config {
                 external_trigger: (TriggerMode::Disabled, ExternalTrigger::Tim_1_cc_1),
                 continuous: Continuous::Single,
                 dma: Dma::Disabled,
-                end_of_conversion_interrupt: Eoc::Disabled,
+                end_of_conversion_interrupt: false,
                 default_sample_time: SampleTime::Cycles_480,
                 vdda: None,
             }
@@ -572,7 +571,7 @@ macro_rules! adc {
                     let mut s = Self {
                         config,
                         adc_reg: adc,
-                        calibrated_vdda: VDDA_CALIB,
+                        calibrated_vdda: 1,
                         max_sample: 0,
                     };
 
@@ -600,7 +599,7 @@ macro_rules! adc {
                     // self.set_external_trigger(config.external_trigger);
                     // self.set_continuous(config.continuous);
                     // self.set_dma(config.dma);
-                    // self.set_end_of_conversion_interrupt(config.end_of_conversion_interrupt);
+                    self.set_end_of_conversion_interrupt(config.end_of_conversion_interrupt);
                     // self.set_default_sample_time(config.default_sample_time);
 
                     if let Some(vdda) = config.vdda {
@@ -723,6 +722,13 @@ macro_rules! adc {
                 pub fn set_sequence(&mut self, sequence: config::SequenceMode) {
                     self.config.sequence = sequence;
                     self.adc_reg.ctrl1().modify(|_, w| w.sqen().bit(sequence.into()));
+                }
+
+                /// Sets if the end-of-conversion behaviour.
+                /// The end-of-conversion interrupt occur either per conversion or for the whole sequence.
+                pub fn set_end_of_conversion_interrupt(&mut self, eoc: bool) {
+                    self.config.end_of_conversion_interrupt = eoc;
+                    self.adc_reg.ctrl1().modify(|_, w| w.cceien().bit(eoc));
                 }
 
                 /// Resets the end-of-conversion flag
@@ -871,10 +877,53 @@ macro_rules! adc {
                 }
             }
 
+            impl<PIN> OneShot<pac::$adc_type, u16, PIN> for Adc<pac::$adc_type>
+            where
+                PIN: Channel<pac::$adc_type, ID=u8>,
+            {
+                type Error = ();
+
+                fn read(&mut self, pin: &mut PIN) -> nb::Result<u16, Self::Error> {
+                    self.read::<PIN>(pin)
+                }
+            }
+
         )+
     };
 }
 
+/// A marker trait to identify MCU pins that can be used as inputs to an ADC channel.
+///
+/// This marker trait denotes an object, i.e. a GPIO pin, that is ready for use as an input to the
+/// ADC. As ADCs channels can be supplied by multiple pins, this trait defines the relationship
+/// between the physical interface and the ADC sampling buffer.
+///
+/// ```
+/// # use std::marker::PhantomData;
+/// # use embedded_hal::adc::Channel;
+///
+/// struct Adc1; // Example ADC with single bank of 8 channels
+/// struct Gpio1Pin1<MODE>(PhantomData<MODE>);
+/// struct Analog(()); // marker type to denote a pin in "analog" mode
+///
+/// // GPIO 1 pin 1 can supply an ADC channel when it is configured in Analog mode
+/// impl Channel<Adc1> for Gpio1Pin1<Analog> {
+///     type ID = u8; // ADC channels are identified numerically
+///
+///     fn channel() -> u8 { 7_u8 } // GPIO pin 1 is connected to ADC channel 7
+/// }
+///
+/// struct Adc2; // ADC with two banks of 16 channels
+/// struct Gpio2PinA<MODE>(PhantomData<MODE>);
+/// struct AltFun(()); // marker type to denote some alternate function mode for the pin
+///
+/// // GPIO 2 pin A can supply an ADC channel when it's configured in some alternate function mode
+/// impl Channel<Adc2> for Gpio2PinA<AltFun> {
+///     type ID = (u8, u8); // ADC channels are identified by bank number and channel number
+///
+///     fn channel() -> (u8, u8) { (0, 3) } // bank 0 channel 3
+/// }
+/// ```
 pub trait Channel<ADC> {
     /// Channel ID type
     ///
@@ -891,6 +940,48 @@ pub trait Channel<ADC> {
     // issue](https://github.com/rust-lang/rust/issues/54973). Something about blanket impls
     // combined with `type ID; const CHANNEL: Self::ID;` causes problems.
     //const CHANNEL: Self::ID;
+}
+
+/// ADCs that sample on single channels per request, and do so at the time of the request.
+///
+/// This trait is the interface to an ADC that is configured to read a specific channel at the time
+/// of the request (in contrast to continuous asynchronous sampling).
+///
+/// ```
+/// use embedded_hal::adc::{Channel, OneShot};
+///
+/// struct MyAdc; // 10-bit ADC, with 5 channels
+/// # impl MyAdc {
+/// #     pub fn power_up(&mut self) {}
+/// #     pub fn power_down(&mut self) {}
+/// #     pub fn do_conversion(&mut self, chan: u8) -> u16 { 0xAA55_u16 }
+/// # }
+///
+/// impl<WORD, PIN> OneShot<MyAdc, WORD, PIN> for MyAdc
+/// where
+///    WORD: From<u16>,
+///    PIN: Channel<MyAdc, ID=u8>,
+/// {
+///    type Error = ();
+///
+///    fn read(&mut self, _pin: &mut PIN) -> nb::Result<WORD, Self::Error> {
+///        let chan = 1 << PIN::channel();
+///        self.power_up();
+///        let result = self.do_conversion(chan);
+///        self.power_down();
+///        Ok(result.into())
+///    }
+/// }
+/// ```
+pub trait OneShot<ADC, Word, Pin: Channel<ADC>> {
+    /// Error type returned by ADC methods
+    type Error;
+
+    /// Request that the ADC begin a conversion on the specified pin
+    ///
+    /// This method takes a `Pin` reference, as it is expected that the ADC will be able to sample
+    /// whatever channel underlies the pin.
+    fn read(&mut self, pin: &mut Pin) -> nb::Result<Word, Self::Error>;
 }
 
 #[cfg(not(any(
