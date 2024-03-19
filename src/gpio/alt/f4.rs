@@ -1,5 +1,5 @@
 use super::*;
-use crate::gpio::{self, NoPin, PushPull};
+use crate::gpio::{self, NoPin, OpenDrain, PushPull};
 
 #[cfg(feature = "tmr1")]
 pub mod tmr1 {
@@ -484,3 +484,90 @@ pub mod uart5 {
         type Tx<Otype> = Tx<Otype>;
     }
 }
+
+pub mod i2c1 {
+    use super::*;
+    use crate::pac::I2C1 as I2C;
+
+    pin! {
+        <Scl, OpenDrain> for [
+            PA9<4>,
+
+            PB6<2>,
+
+            PB8<2>,
+
+            PF1<2>,
+        ],
+
+        <Sda, OpenDrain> for [
+            PA10<4>,
+
+            PB7<2>,
+
+            PB9<2>,
+
+            PF0<2>,
+        ],
+
+        <Smba, OpenDrain> for [
+            PA11<4>,
+
+            PB5<3>,
+        ],
+    }
+
+    impl I2cCommon for I2C {
+        type Scl = Scl;
+        type Sda = Sda;
+        type Smba = Smba;
+    }
+}
+
+pub mod i2c2 {
+    use super::*;
+    use crate::pac::I2C2 as I2C;
+
+    pin! {
+        <Scl, OpenDrain> for [
+            PA0<4>,
+
+            PA8<7>,
+
+            PA11<5>,
+
+            PB10<1>,
+
+            PB13<5>,
+
+            PF6<0>,
+        ],
+
+        <Sda, OpenDrain> for [
+            PA1<4>,
+
+            PA12<5>,
+
+            PB4<7>,
+
+            PB11<1>,
+
+            PB14<5>,
+
+            PF7<0>,
+        ],
+
+        <Smba, OpenDrain> for [
+            PA9<7>,
+
+            PB12<7>,
+        ],
+    }
+
+    impl I2cCommon for I2C {
+        type Scl = Scl;
+        type Sda = Sda;
+        type Smba = Smba;
+    }
+}
+

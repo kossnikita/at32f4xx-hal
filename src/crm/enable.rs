@@ -83,5 +83,3 @@ macro_rules! bus {
 
 #[cfg(any(feature = "at32f415", feature = "at32f421"))]
 mod f1;
-#[cfg(any(feature = "at32f415", feature = "at32f421"))]
-pub use f1::*;

@@ -56,7 +56,7 @@ pub use crate::gpio::GpioExt as _at32f4xx_hal_gpio_GpioExt;
 // pub use crate::i2c::dma::I2CMasterReadDMA as _at32f4xx_hal_i2c_dma_I2CMasterReadDMA;
 // pub use crate::i2c::dma::I2CMasterWriteDMA as _at32f4xx_hal_i2c_dma_I2CMasterWriteDMA;
 // pub use crate::i2c::dma::I2CMasterWriteReadDMA as _at32f4xx_hal_i2c_dma_I2CMasterWriteReadDMA;
-// pub use crate::i2c::I2cExt as _at32f4xx_hal_i2c_I2cExt;
+pub use crate::i2c::I2cExt as _at32f4xx_hal_i2c_I2cExt;
 // pub use crate::i2s::I2sExt as _at32f4xx_hal_i2s_I2sExt;
 pub use crate::crm::CrmExt as _at32f4xx_hal_crm_CrmExt;
 pub use crate::qei::QeiExt as _at32f4xx_hal_QeiExt;

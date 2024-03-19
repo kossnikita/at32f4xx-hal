@@ -103,6 +103,7 @@ pub mod bb;
 pub mod crm;
 pub mod flash;
 pub mod gpio;
+pub mod i2c;
 pub mod prelude;
 pub mod qei;
 pub mod serial;
