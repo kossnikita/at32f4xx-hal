@@ -412,6 +412,7 @@ impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
 impl<const A: u8> PinMode for Alternate<A, OpenDrain> {
     const CFGR: u32 = 0b10;
     const OMODE: Option<u32> = Some(0b1);
+    const MUX: Option<u32> = Some(A as _);
 }
 
 #[cfg(feature = "legacy-gpio")]
@@ -424,6 +425,7 @@ impl<const A: u8> PinMode for Alternate<A, PushPull> {
 impl<const A: u8> PinMode for Alternate<A, PushPull> {
     const CFGR: u32 = 0b10;
     const OMODE: Option<u32> = Some(0b0);
+    const MUX: Option<u32> = Some(A as _);
 }
 
 #[cfg(feature = "legacy-gpio")]

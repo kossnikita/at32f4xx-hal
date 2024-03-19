@@ -493,21 +493,21 @@ pub mod i2c1 {
         <Scl, OpenDrain> for [
             PA9<4>,
 
-            PB6<2>,
+            PB6<1>,
 
-            PB8<2>,
+            PB8<1>,
 
-            PF1<2>,
+            PF1<1>,
         ],
 
         <Sda, OpenDrain> for [
             PA10<4>,
 
-            PB7<2>,
+            PB7<1>,
 
-            PB9<2>,
+            PB9<1>,
 
-            PF0<2>,
+            PF0<1>,
         ],
 
         <Smba, OpenDrain> for [
